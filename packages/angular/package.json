@@ -1,0 +1,57 @@
+{
+  "name": "@drm/multitabs-angular",
+  "version": "0.1.0",
+  "description": "Browser-tab-style navigation component for Angular",
+  "keywords": [
+    "angular",
+    "tabs",
+    "navigation",
+    "multitabs",
+    "router"
+  ],
+  "homepage": "https://drm-multitabs.dev/docs/angular",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drm-dev/multitabs",
+    "directory": "packages/angular"
+  },
+  "license": "MIT",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/esm2022/index.mjs",
+      "default": "./dist/fesm2022/drm-multitabs-angular.mjs"
+    },
+    "./styles": "./dist/style.css"
+  },
+  "main": "./dist/fesm2022/drm-multitabs-angular.mjs",
+  "module": "./dist/fesm2022/drm-multitabs-angular.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "ng-packagr -p ng-package.json",
+    "dev": "ng-packagr -p ng-package.json --watch",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "@angular/common": "^17.0.0 || ^18.0.0",
+    "@angular/core": "^17.0.0 || ^18.0.0",
+    "@angular/router": "^17.0.0 || ^18.0.0",
+    "rxjs": "^7.8.0"
+  },
+  "devDependencies": {
+    "@angular/common": "^18.0.0",
+    "@angular/compiler": "^18.0.0",
+    "@angular/compiler-cli": "^18.0.0",
+    "@angular/core": "^18.0.0",
+    "@angular/router": "^18.0.0",
+    "ng-packagr": "^18.0.0",
+    "rxjs": "^7.8.1",
+    "typescript": "^5.4.5",
+    "zone.js": "^0.14.0"
+  }
+}

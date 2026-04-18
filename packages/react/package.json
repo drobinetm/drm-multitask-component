@@ -1,0 +1,61 @@
+{
+  "name": "@drm/multitabs-react",
+  "version": "0.1.0",
+  "description": "Browser-tab-style navigation component for React",
+  "keywords": [
+    "react",
+    "tabs",
+    "navigation",
+    "multitabs",
+    "router",
+    "react-router"
+  ],
+  "homepage": "https://drm-multitabs.dev/docs/react",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drm-dev/multitabs",
+    "directory": "packages/react"
+  },
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.es.js",
+      "require": "./dist/index.cjs.js"
+    },
+    "./styles": "./dist/style.css"
+  },
+  "main": "./dist/index.cjs.js",
+  "module": "./dist/index.es.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src --ext .ts,.tsx",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.0.0"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^15.0.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "jsdom": "^24.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.23.1",
+    "vite": "^5.2.11",
+    "vite-plugin-dts": "^3.9.1",
+    "vitest": "^1.5.3"
+  }
+}

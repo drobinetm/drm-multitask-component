@@ -1,0 +1,333 @@
+/* ============================================================
+   @drm/multitabs — CSS Custom Properties
+   Override any of these variables to theme the component.
+   ============================================================ */
+
+:root {
+  /* --- Tab bar shell --- */
+  --drm-tabs-height: 40px;
+  --drm-tabs-shell-bg: rgba(255, 255, 255, 0.8);
+  --drm-tabs-shell-border: 1px solid rgba(0, 0, 0, 0.08);
+  --drm-tabs-shell-backdrop: blur(16px);
+  --drm-tabs-shell-padding: 0 8px;
+  --drm-tabs-z-index: 8;
+
+  /* --- Individual tab --- */
+  --drm-tabs-tab-bg: transparent;
+  --drm-tabs-tab-color: inherit;
+  --drm-tabs-tab-max-width: 200px;
+  --drm-tabs-tab-min-width: 80px;
+  --drm-tabs-tab-gap: 4px;
+  --drm-tabs-border-radius: 8px;
+  --drm-tabs-font-size: 0.875rem;
+  --drm-tabs-font-weight: 400;
+  --drm-tabs-tab-padding: 0 12px;
+  --drm-tabs-transition: all 180ms ease;
+
+  /* --- Active tab --- */
+  --drm-tabs-active-bg: #1976d2;
+  --drm-tabs-active-color: #ffffff;
+  --drm-tabs-active-border-color: #1976d2;
+  --drm-tabs-active-shadow: 0 2px 8px rgba(25, 118, 210, 0.24);
+
+  /* --- Hover tab --- */
+  --drm-tabs-hover-bg: rgba(0, 0, 0, 0.04);
+  --drm-tabs-hover-color: inherit;
+
+  /* --- Close button --- */
+  --drm-tabs-close-size: 16px;
+  --drm-tabs-close-color: rgba(0, 0, 0, 0.4);
+  --drm-tabs-close-hover-color: #f44336;
+  --drm-tabs-close-hover-bg: rgba(244, 67, 54, 0.1);
+
+  /* --- Drag over --- */
+  --drm-tabs-drag-over-border: 2px solid #1976d2;
+  --drm-tabs-drag-over-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+
+  /* --- Context menu --- */
+  --drm-tabs-menu-bg: rgba(255, 255, 255, 0.95);
+  --drm-tabs-menu-border: 1px solid rgba(0, 0, 0, 0.08);
+  --drm-tabs-menu-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --drm-tabs-menu-border-radius: 8px;
+  --drm-tabs-menu-item-hover-bg: rgba(25, 118, 210, 0.08);
+}
+
+/* --- Dark mode support --- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --drm-tabs-shell-bg: rgba(30, 30, 30, 0.85);
+    --drm-tabs-shell-border: 1px solid rgba(255, 255, 255, 0.08);
+    --drm-tabs-tab-color: rgba(255, 255, 255, 0.8);
+    --drm-tabs-hover-bg: rgba(255, 255, 255, 0.06);
+    --drm-tabs-close-color: rgba(255, 255, 255, 0.4);
+    --drm-tabs-menu-bg: rgba(40, 40, 40, 0.97);
+    --drm-tabs-menu-border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* ============================================================
+   MultiTabs base styles
+   ============================================================ */
+
+.drm-multitabs {
+  position: sticky;
+  top: 0;
+  z-index: var(--drm-tabs-z-index);
+  width: 100%;
+  height: var(--drm-tabs-height);
+  background: var(--drm-tabs-shell-bg);
+  border-bottom: var(--drm-tabs-shell-border);
+  backdrop-filter: var(--drm-tabs-shell-backdrop);
+  -webkit-backdrop-filter: var(--drm-tabs-shell-backdrop);
+}
+
+.drm-multitabs__shell {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: var(--drm-tabs-shell-padding);
+  gap: 4px;
+  overflow: hidden;
+}
+
+.drm-multitabs__rail {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+  gap: var(--drm-tabs-tab-gap);
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.drm-multitabs__rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* --- Tab group (draggable wrapper) --- */
+.drm-multitabs__tab-group {
+  display: flex;
+  align-items: center;
+  height: calc(100% - 8px);
+  flex-shrink: 0;
+  border-radius: var(--drm-tabs-border-radius);
+  transition: var(--drm-tabs-transition);
+}
+
+.drm-multitabs__tab-group--drag-over {
+  box-shadow: var(--drm-tabs-drag-over-shadow);
+  outline: var(--drm-tabs-drag-over-border);
+}
+
+/* --- Tab shell --- */
+.drm-multitabs__tab-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* --- Tab button --- */
+.drm-multitabs__tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  max-width: var(--drm-tabs-tab-max-width);
+  min-width: var(--drm-tabs-tab-min-width);
+  padding: var(--drm-tabs-tab-padding);
+  padding-right: 28px; /* space for close button */
+  border: none;
+  border-radius: var(--drm-tabs-border-radius);
+  background: var(--drm-tabs-tab-bg);
+  color: var(--drm-tabs-tab-color);
+  font-size: var(--drm-tabs-font-size);
+  font-weight: var(--drm-tabs-font-weight);
+  cursor: pointer;
+  transition: var(--drm-tabs-transition);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  outline: none;
+}
+
+.drm-multitabs__tab:hover {
+  background: var(--drm-tabs-hover-bg);
+  color: var(--drm-tabs-hover-color);
+}
+
+.drm-multitabs__tab--active {
+  background: var(--drm-tabs-active-bg);
+  color: var(--drm-tabs-active-color);
+  box-shadow: var(--drm-tabs-active-shadow);
+  border-top: 2px solid var(--drm-tabs-active-border-color);
+  font-weight: 500;
+}
+
+.drm-multitabs__tab--active:hover {
+  background: var(--drm-tabs-active-bg);
+  color: var(--drm-tabs-active-color);
+}
+
+/* --- Tab label --- */
+.drm-multitabs__tab-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.drm-multitabs__tab-case-number {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+
+.drm-multitabs__tab-case-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+/* --- Close button --- */
+.drm-multitabs__close {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--drm-tabs-close-size);
+  height: var(--drm-tabs-close-size);
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--drm-tabs-close-color);
+  cursor: pointer;
+  transition: var(--drm-tabs-transition);
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.drm-multitabs__close:hover {
+  background: var(--drm-tabs-close-hover-bg);
+  color: var(--drm-tabs-close-hover-color);
+}
+
+/* --- Context menu --- */
+.drm-multitabs__menu-card {
+  background: var(--drm-tabs-menu-bg);
+  border: var(--drm-tabs-menu-border);
+  box-shadow: var(--drm-tabs-menu-shadow);
+  border-radius: var(--drm-tabs-menu-border-radius);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  min-width: 160px;
+  padding: 4px;
+}
+
+.drm-multitabs__menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 120ms ease;
+  text-align: left;
+}
+
+.drm-multitabs__menu-item:hover {
+  background: var(--drm-tabs-menu-item-hover-bg);
+}
+
+.drm-multitabs__menu-item--danger:hover {
+  background: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+}
+
+/* --- Launcher button --- */
+.drm-multitabs__launcher {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: var(--drm-tabs-transition);
+}
+
+.drm-multitabs__launcher:hover {
+  background: var(--drm-tabs-hover-bg);
+}
+
+/* --- Dropdown button --- */
+.drm-multitabs__dropdown {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: var(--drm-tabs-transition);
+  font-size: 12px;
+}
+
+.drm-multitabs__dropdown:hover {
+  background: var(--drm-tabs-hover-bg);
+}
+
+/* --- Transition animations --- */
+.drm-multitabs-tab-enter-active,
+.drm-multitabs-tab-leave-active {
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+.drm-multitabs-tab-enter-from,
+.drm-multitabs-tab-leave-to {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+}
+
+.drm-multitabs-tab-move {
+  transition: transform 180ms ease;
+}
+
+/* --- Responsive --- */
+@media (max-width: 960px) {
+  :root {
+    --drm-tabs-tab-max-width: 12rem;
+  }
+}
+
+@media (max-width: 760px) {
+  .drm-multitabs__launcher {
+    display: none;
+  }
+
+  :root {
+    --drm-tabs-tab-min-width: 60px;
+    --drm-tabs-shell-padding: 0 4px;
+  }
+}
