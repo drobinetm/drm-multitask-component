@@ -84,8 +84,6 @@ Astro and styled around the blue palette defined for the brand.
 The project supports multiple funding channels so individuals and teams can use
 the method that fits them best.
 
-- GitHub Sponsors: `https://github.com/sponsors/drm-dev`
-- Buy Me a Coffee: `https://buymeacoffee.com/drm-dev`
 - Crypto wallets: see `apps/docs/src/pages/support.astro`
 
 ## License
