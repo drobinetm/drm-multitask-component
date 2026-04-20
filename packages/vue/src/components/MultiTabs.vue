@@ -186,23 +186,15 @@
 </template>
 
 <script setup lang="ts">
-import { shallowRef, computed, Teleport } from "vue";
+import { shallowRef, computed } from "vue";
 import { useMultiTabs } from "@/composables/useMultiTabs";
 import type { MultiTabItem, MultiTabsTheme } from "@/types";
 import "@/styles/multitabs.css";
-
-// ---------------------------------------------------------------------------
-// Props
-// ---------------------------------------------------------------------------
 
 const props = defineProps<{
   /** Custom theme overrides via CSS custom properties */
   theme?: MultiTabsTheme;
 }>();
-
-// ---------------------------------------------------------------------------
-// Composable
-// ---------------------------------------------------------------------------
 
 const {
   tabs,
@@ -214,10 +206,6 @@ const {
   reloadTab,
 } = useMultiTabs();
 
-// ---------------------------------------------------------------------------
-// Local UI state
-// ---------------------------------------------------------------------------
-
 const activeTabMenuId = shallowRef<string | null>(null);
 const menuPosition = shallowRef<{ x: number; y: number }>({ x: 0, y: 0 });
 const dropdownPosition = shallowRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -225,10 +213,6 @@ const draggingTabId = shallowRef<string | null>(null);
 const dragOverTabId = shallowRef<string | null>(null);
 const dropdownOpen = shallowRef(false);
 const dropdownButton = shallowRef<HTMLElement | null>(null);
-
-// ---------------------------------------------------------------------------
-// Theme CSS vars
-// ---------------------------------------------------------------------------
 
 const themeVars = computed<Record<string, string>>(() => {
   if (!props.theme) return {};
@@ -255,18 +239,10 @@ const themeVars = computed<Record<string, string>>(() => {
   return result;
 });
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
 function closeAllMenus() {
   activeTabMenuId.value = null;
   dropdownOpen.value = false;
 }
-
-// ---------------------------------------------------------------------------
-// Event handlers
-// ---------------------------------------------------------------------------
 
 function handleTabClick(tab: MultiTabItem) {
   closeAllMenus();
@@ -316,7 +292,6 @@ function handleDropdownTabClick(tab: MultiTabItem) {
   openTab(tab);
 }
 
-// Drag & drop
 function handleDragStart(tab: MultiTabItem, event: DragEvent) {
   draggingTabId.value = tab.id;
   event.dataTransfer?.setData("text/plain", tab.id);

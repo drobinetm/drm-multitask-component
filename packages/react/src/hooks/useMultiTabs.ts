@@ -135,7 +135,6 @@ export function useMultiTabs(options: UseMultiTabsOptions = {}) {
         caseTitle: getSearchParam(loc.search, "caseTitle"),
       };
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [opts.resolveTitle, opts.defaultIcon],
   );
 

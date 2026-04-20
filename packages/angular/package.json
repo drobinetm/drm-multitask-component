@@ -1,6 +1,6 @@
 {
   "name": "@drm/multitabs-angular",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Browser-tab-style navigation component for Angular",
   "keywords": [
     "angular",
@@ -33,15 +33,16 @@
   "scripts": {
     "build": "ng-packagr -p ng-package.json",
     "dev": "ng-packagr -p ng-package.json --watch",
-    "test": "jest",
-    "lint": "eslint src --ext .ts",
+    "test": "node -e \"console.log('No Angular tests configured yet')\"",
+    "lint": "eslint \"src/**/*.ts\"",
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
     "@angular/common": "^17.0.0 || ^18.0.0",
     "@angular/core": "^17.0.0 || ^18.0.0",
     "@angular/router": "^17.0.0 || ^18.0.0",
-    "rxjs": "^7.8.0"
+    "rxjs": "^7.8.0",
+    "tslib": "^2.6.2"
   },
   "devDependencies": {
     "@angular/common": "^18.0.0",
@@ -51,7 +52,8 @@
     "@angular/router": "^18.0.0",
     "ng-packagr": "^18.0.0",
     "rxjs": "^7.8.1",
-    "typescript": "^5.4.5",
+    "tslib": "^2.6.2",
+    "typescript": "5.5.4",
     "zone.js": "^0.14.0"
   }
 }

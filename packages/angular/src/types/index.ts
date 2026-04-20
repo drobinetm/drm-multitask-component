@@ -11,7 +11,7 @@ export interface MultiTabItem {
   /** Icon identifier string */
   icon: string;
   /** Angular Router navigation target */
-  to: string | UrlTree | any[];
+  to: string | UrlTree | string[];
   /** Whether the tab matches a known navigation menu item */
   isMenuItem: boolean;
   /** Route path */
