@@ -7,6 +7,7 @@ import React, {
   type ReactNode,
   type CSSProperties,
 } from "react";
+import { createPortal } from "react-dom";
 import { useMultiTabs, type UseMultiTabsReturn } from "@/hooks/useMultiTabs";
 import type {
   MultiTabItem,
@@ -132,9 +133,18 @@ export function MultiTabs({
   } = useMultiTabsContext();
 
   const [activeTabMenuId, setActiveTabMenuId] = useState<string | null>(null);
+  const [menuPosition, setMenuPosition] = useState<{ x: number; y: number }>({
+    x: 0,
+    y: 0,
+  });
+  const [dropdownPosition, setDropdownPosition] = useState<{
+    x: number;
+    y: number;
+  }>({ x: 0, y: 0 });
   const [dragOverTabId, setDragOverTabId] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const draggingTabIdRef = useRef<string | null>(null);
+  const dropdownButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const themeVars = buildThemeVars(theme);
 
@@ -178,10 +188,27 @@ export function MultiTabs({
     (tabId: string, e: React.MouseEvent) => {
       e.preventDefault();
       setDropdownOpen(false);
+      setMenuPosition({ x: e.clientX, y: e.clientY });
       setActiveTabMenuId((prev) => (prev === tabId ? null : tabId));
     },
     [],
   );
+
+  const handleDropdownToggle = useCallback(() => {
+    if (dropdownOpen) {
+      setDropdownOpen(false);
+      return;
+    }
+
+    setActiveTabMenuId(null);
+
+    const rect = dropdownButtonRef.current?.getBoundingClientRect();
+    if (rect) {
+      setDropdownPosition({ x: rect.right, y: rect.bottom + 4 });
+    }
+
+    setDropdownOpen(true);
+  }, [dropdownOpen]);
 
   const handleDragStart = useCallback(
     (tab: MultiTabItem, e: React.DragEvent) => {
@@ -293,31 +320,7 @@ export function MultiTabs({
                   )}
                 </button>
 
-                {/* Context menu */}
-                {activeTabMenuId === tab.id && (
-                  <div
-                    className="drm-multitabs__menu-card drm-multitabs__context-menu"
-                    role="menu"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <button
-                      className="drm-multitabs__menu-item"
-                      type="button"
-                      role="menuitem"
-                      onClick={() => handleReloadTab(tab)}
-                    >
-                      {menuIconReload} Reload Tab
-                    </button>
-                    <button
-                      className="drm-multitabs__menu-item drm-multitabs__menu-item--danger"
-                      type="button"
-                      role="menuitem"
-                      onClick={() => handleCloseTab(tab)}
-                    >
-                      {menuIconClose} Close Tab
-                    </button>
-                  </div>
-                )}
+                {/* Context menu rendered via portal to avoid overflow:hidden clipping */}
 
                 {/* Close button */}
                 <button
@@ -342,62 +345,16 @@ export function MultiTabs({
           style={{ position: "relative", flexShrink: 0 }}
         >
           <button
+            ref={dropdownButtonRef}
             className="drm-multitabs__dropdown"
             type="button"
             aria-label="All tabs"
             aria-haspopup="true"
             aria-expanded={dropdownOpen}
-            onClick={() => setDropdownOpen((v) => !v)}
+            onClick={handleDropdownToggle}
           >
             {dropdownIcon}
           </button>
-
-          {dropdownOpen && (
-            <div
-              className="drm-multitabs__menu-card drm-multitabs__dropdown-menu"
-              role="menu"
-              style={{
-                position: "absolute",
-                top: "calc(100% + 4px)",
-                right: 0,
-                zIndex: 100,
-                minWidth: 160,
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  className={`drm-multitabs__menu-item${tab.id === currentTabId ? " drm-multitabs__menu-item--active" : ""}`}
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    closeAllMenus();
-                    openTab(tab);
-                  }}
-                >
-                  {tab.caseNumber
-                    ? `[${tab.caseNumber}] ${tab.caseTitle}`
-                    : tab.title}
-                </button>
-              ))}
-              <hr
-                style={{
-                  border: "none",
-                  borderTop: "1px solid rgba(0,0,0,0.08)",
-                  margin: "4px 0",
-                }}
-              />
-              <button
-                className="drm-multitabs__menu-item drm-multitabs__menu-item--danger"
-                type="button"
-                role="menuitem"
-                onClick={handleCloseAllTabs}
-              >
-                {menuIconClose} Close All Tabs
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -408,6 +365,105 @@ export function MultiTabs({
           onClick={closeAllMenus}
         />
       )}
+
+      {/* Context menu portal — escapes overflow:hidden and stacking contexts */}
+      {activeTabMenuId !== null &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <>
+            {/* Overlay inside portal so it shares the same stacking context */}
+            <div
+              style={{ position: "fixed", inset: 0, zIndex: 9998 }}
+              onClick={closeAllMenus}
+            />
+            <div
+              className="drm-multitabs__menu-card drm-multitabs__context-menu"
+              role="menu"
+              style={{
+                position: "fixed",
+                left: menuPosition.x,
+                top: menuPosition.y,
+                zIndex: 9999,
+                minWidth: 160,
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {tabs
+                .filter((tab) => tab.id === activeTabMenuId)
+                .map((tab) => (
+                  <React.Fragment key={tab.id}>
+                    <button
+                      className="drm-multitabs__menu-item"
+                      type="button"
+                      role="menuitem"
+                      onClick={() => handleReloadTab(tab)}
+                    >
+                      {menuIconReload} Reload Tab
+                    </button>
+                    <button
+                      className="drm-multitabs__menu-item drm-multitabs__menu-item--danger"
+                      type="button"
+                      role="menuitem"
+                      onClick={() => handleCloseTab(tab)}
+                    >
+                      {menuIconClose} Close Tab
+                    </button>
+                  </React.Fragment>
+                ))}
+            </div>
+          </>,
+          document.body,
+        )}
+
+      {dropdownOpen &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="drm-multitabs__menu-card drm-multitabs__dropdown-menu"
+            role="menu"
+            style={{
+              position: "fixed",
+              top: dropdownPosition.y,
+              left: Math.max(12, dropdownPosition.x - 160),
+              zIndex: 9999,
+              minWidth: 160,
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                className={`drm-multitabs__menu-item${tab.id === currentTabId ? " drm-multitabs__menu-item--active" : ""}`}
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  closeAllMenus();
+                  openTab(tab);
+                }}
+              >
+                {tab.caseNumber
+                  ? `[${tab.caseNumber}] ${tab.caseTitle}`
+                  : tab.title}
+              </button>
+            ))}
+            <hr
+              style={{
+                border: "none",
+                borderTop: "1px solid rgba(0,0,0,0.08)",
+                margin: "4px 0",
+              }}
+            />
+            <button
+              className="drm-multitabs__menu-item drm-multitabs__menu-item--danger"
+              type="button"
+              role="menuitem"
+              onClick={handleCloseAllTabs}
+            >
+              {menuIconClose} Close All Tabs
+            </button>
+          </div>,
+          document.body,
+        )}
     </nav>
   );
 }
