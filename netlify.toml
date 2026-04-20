@@ -1,0 +1,6 @@
+[build]
+  command = "pnpm turbo run build --filter=@drm/multitabs-docs"
+  publish = "apps/docs/dist"
+
+[build.environment]
+  NODE_VERSION = "22"

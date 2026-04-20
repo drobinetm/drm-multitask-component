@@ -1,0 +1,53 @@
+name: Docs
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "apps/docs/**"
+      - "packages/react/**"
+      - "packages/vue/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/docs/**"
+      - "packages/react/**"
+      - "packages/vue/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+jobs:
+  docs:
+    name: Build Docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build docs app and workspace deps
+        run: pnpm turbo run build --filter=@drm/multitabs-docs
+
+      - name: Check docs app
+        run: pnpm --filter @drm/multitabs-docs lint
