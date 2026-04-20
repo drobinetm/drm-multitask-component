@@ -9,7 +9,8 @@
         "package.json",
         "tsconfig.json",
         "vite.config.*",
-        "ng-package.json"
+        "ng-package.json",
+        "astro.config.*"
       ],
       "outputs": ["dist/**"]
     },
@@ -23,7 +24,7 @@
       "outputs": ["coverage/**"]
     },
     "lint": {
-      "inputs": ["src/**", "*.ts", "*.js", "*.vue", "*.tsx"]
+      "inputs": ["src/**", "*.ts", "*.js", "*.vue", "*.tsx", "*.astro"]
     },
     "clean": {
       "cache": false

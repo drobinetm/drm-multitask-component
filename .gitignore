@@ -31,3 +31,15 @@ Thumbs.db
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+# AI
+AGENTS.md
+PRD.md
+RUN.md
+.pi
+.qwen
+.windsurf
+.claude
+.agents
+.skills-lock.json
+.skills.json
