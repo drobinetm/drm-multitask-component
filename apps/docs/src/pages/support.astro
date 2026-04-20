@@ -1,0 +1,64 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+const sponsorOptions = [
+  {
+    label: 'GitHub Sponsors',
+    description: 'Best option for recurring sponsorship tied to the repository profile.',
+    status: 'Not available yet',
+  },
+]
+
+const wallets = [
+  { symbol: 'BTC', network: 'Bitcoin', address: 'bc1q-your-wallet-here' },
+  { symbol: 'ETH', network: 'Ethereum', address: '0xYourWalletHere' },
+  { symbol: 'USDT', network: 'BEP20', address: 'Add-your-USDT-wallet-here' },
+  { symbol: 'SOL', network: 'Solana', address: 'AddYourSolanaWalletHere' },
+]
+---
+
+<BaseLayout title="Support @drm/multitabs" description="Funding options for @drm/multitabs, including GitHub Sponsors, Buy Me a Coffee, and crypto wallets." hideSponsorCta={true}>
+  <section class="section" style="padding-top: 4.6rem; padding-bottom: 5rem;">
+    <div class="shell" style="display:grid; gap:1.2rem;">
+      <div class="support-hero" data-aos="fade-up" data-aos-once="true">
+        <div class="eyebrow">Support the work</div>
+        <h1 class="headline" style="max-width: 12ch;">Keep the project moving with direct support.</h1>
+        <p class="subhead">If <code>@drm/multitabs</code> saves engineering time in an internal product, sponsorship helps fund package parity, docs, bugfixes, and new examples.</p>
+      </div>
+
+      <div class="support-grid" style="gap:1rem;">
+        <div class="glass card" data-aos="fade-up" data-aos-delay="60" data-aos-once="true" style="padding:1.4rem; border-radius:28px; background:linear-gradient(180deg, rgba(10,18,34,0.76), rgba(6,12,24,0.92));">
+          <div class="eyebrow">Platforms</div>
+          <div style="display:grid; gap:0.9rem;">
+            {sponsorOptions.map((option) => (
+              <div class="glass card support-option" style="padding:1.2rem; border-radius:22px; background:linear-gradient(180deg, rgba(16,28,48,0.78), rgba(9,17,31,0.92)); border:1px solid rgba(255,255,255,0.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);">
+                <strong style="display:block; margin-bottom:0.35rem; font-size:1.2rem;">{option.label}</strong>
+                <p class="panel-copy" style="margin-bottom:0.8rem;">{option.description}</p>
+                <span style="display:inline-flex; align-items:center; gap:0.5rem; width:auto; min-height:2.5rem; padding:0.8rem 1rem; border-radius:14px; border:1px solid rgba(245, 189, 95, 0.3); background:linear-gradient(180deg, rgba(80, 56, 18, 0.42), rgba(45, 31, 10, 0.5)); color:#f5d48f; font-weight:700; letter-spacing:0.02em;">
+                  <span style="width:0.5rem; height:0.5rem; border-radius:50%; background:#f5bd5f; box-shadow:0 0 12px rgba(245, 189, 95, 0.45);"></span>
+                  {option.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="glass card" data-aos="fade-up" data-aos-delay="120" data-aos-once="true" style="padding:1.4rem; border-radius:28px; background:linear-gradient(180deg, rgba(10,18,34,0.76), rgba(6,12,24,0.92));">
+          <div class="eyebrow">Crypto wallets</div>
+          <p class="panel-copy" style="margin-top:0;">Use direct wallets if your team prefers on-chain support. Replace the placeholders below before publishing the site.</p>
+          <div style="display:grid; gap:0.8rem; margin-top:1rem;">
+            {wallets.map((wallet) => (
+              <div class="glass card wallet-card" style="padding:1rem; border-radius:18px; background:linear-gradient(180deg, rgba(16,28,48,0.78), rgba(9,17,31,0.92)); border:1px solid rgba(255,255,255,0.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);">
+                <div style="display:flex; justify-content:space-between; gap:1rem; align-items:center; margin-bottom:0.4rem; flex-wrap:wrap;">
+                  <strong style="font-size:1.1rem;">{wallet.symbol}</strong>
+                  <span style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.16em; color:rgba(129,190,255,0.82);">{wallet.network}</span>
+                </div>
+                <code style="display:block; overflow:auto; white-space:nowrap; background:rgba(255,255,255,0.05); padding:0.7rem 0.8rem; border-radius:12px; color:#eef5ff;">{wallet.address}</code>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

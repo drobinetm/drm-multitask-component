@@ -1,0 +1,45 @@
+---
+const items = [
+  {
+    title: 'Router-native state',
+    copy: 'Tabs open from real routes, preserve identity across refreshes, and follow stack-native navigation patterns.',
+  },
+  {
+    title: 'Theme with any system',
+    copy: 'CSS custom properties keep the package neutral. Tailwind, CSS Modules, SCSS, or design tokens can all drive the look.',
+  },
+  {
+    title: 'Workspace behavior',
+    copy: 'Close, reorder, reload, and persist tabs without wiring a full window manager into your app shell.',
+  },
+  {
+    title: 'Cross-stack shape',
+    copy: 'Vue composables, React hooks, and Angular services stay conceptually aligned so teams can share patterns.',
+  },
+]
+---
+
+<section class="section" data-aos="fade-up" data-aos-once="true">
+  <div class="shell glass" style="padding:1.6rem; border-radius:36px; background:linear-gradient(180deg, rgba(10,18,34,0.72), rgba(6,12,24,0.94));">
+    <div style="display:flex; align-items:end; justify-content:space-between; gap:1rem; margin-bottom:1.4rem; flex-wrap:wrap;">
+      <div>
+        <div class="eyebrow">Core ideas</div>
+        <h2 style="margin:0; max-width:15ch; font-size: clamp(2rem, 4vw, 3.7rem); line-height:0.92; letter-spacing:-0.05em;">Built for claim desks, admin tools, CRMs, and dense internal apps.</h2>
+      </div>
+      <p class="panel-copy" style="max-width:38ch;">The component is less about decorative tabs and more about giving long-lived workflows a calm, browser-like rhythm.</p>
+    </div>
+
+    <div class="feature-grid">
+      {items.map((item, index) => (
+        <article class="card" data-aos="fade-up" data-aos-delay={String(index * 70)} data-aos-once="true" style="min-height: 220px; position:relative; overflow:hidden; border-radius:26px; background:linear-gradient(180deg, rgba(16,28,48,0.78), rgba(9,17,31,0.92)); border:1px solid rgba(255,255,255,0.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);">
+          <div style="position:absolute; inset:auto -10% -32% auto; width: 220px; height: 220px; border-radius:50%; background: radial-gradient(circle, rgba(41,106,255,0.22), transparent 62%);"></div>
+          <div style="position:relative; z-index:1;">
+            <div style="width:3rem; height:3rem; display:grid; place-items:center; border-radius:1rem; background:linear-gradient(180deg, rgba(16,109,255,0.16), rgba(89,213,255,0.08)); color:#89dbff; font-size:1.1rem; font-weight:700;">0{index + 1}</div>
+            <h3 style="margin:0.9rem 0 0.75rem; font-size:1.6rem; line-height:1; letter-spacing:-0.03em;">{item.title}</h3>
+            <p class="panel-copy">{item.copy}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>

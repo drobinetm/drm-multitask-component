@@ -1,0 +1,82 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DemoVue from "../../components/DemoVue.vue";
+---
+
+<BaseLayout
+  title="Vue Demo | @drm/multitabs"
+  description="Live demo of @drm/multitabs-vue with Vue Router."
+>
+  <section class="section" style="padding-top: 4rem;">
+    <div class="shell">
+
+      <div class="demo-header" data-aos="fade-up" data-aos-once="true">
+        <div class="eyebrow">Live demo</div>
+        <h1 class="h2">Vue</h1>
+        <div class="demo-copy-card glass">
+          <p class="demo-desc">
+            A real instance of <code>@drm/multitabs-vue</code> running with
+            <code>vue-router</code> using <code>createMemoryHistory</code> so it
+            doesn't affect the page URL. Navigate the links inside the shell to
+            open, close, and reorder tabs.
+          </p>
+        </div>
+        <a href="/docs/vue/" class="btn" style="display:inline-flex;align-items:center;gap:0.4rem;margin-top:1rem;">
+          ← Back to Vue docs
+        </a>
+      </div>
+
+      <div class="demo-frame glass" data-aos="fade-up" data-aos-delay="80" data-aos-once="true">
+        <DemoVue client:only="vue" />
+      </div>
+
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .demo-header {
+    margin-bottom: 2rem;
+  }
+
+  .demo-desc {
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .demo-copy-card {
+    max-width: 640px;
+    margin-top: 0.75rem;
+    padding: 1rem 1.1rem;
+    border-radius: 14px;
+  }
+
+  .demo-desc code {
+    background: rgba(255,255,255,0.07);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: #5a95c1;
+  }
+
+  .demo-frame {
+    border-radius: 14px;
+    overflow: visible;
+    min-height: 420px;
+    background: linear-gradient(180deg, rgba(10,18,34,0.9), rgba(6,12,24,0.98));
+    /* No backdrop-filter — it creates a stacking context that traps
+       position:fixed portals (context menu) below page content */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  :global(.demo-shell-outer .drm-multitabs) {
+    font-family: system-ui, sans-serif;
+    border-radius: 14px 14px 0 0;
+  }
+
+  :global(.demo-shell-outer .drm-multitabs__menu-card) {
+    z-index: 200;
+  }
+</style>

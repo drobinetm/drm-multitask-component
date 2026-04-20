@@ -1,0 +1,52 @@
+---
+import BaseLayout from './BaseLayout.astro'
+import DemoCallout from '../components/DemoCallout.astro'
+
+interface Props {
+  title: string
+  description?: string
+  demo?: 'vue' | 'react' | 'angular'
+}
+
+// When used as a markdown layout, Astro passes frontmatter inside Astro.props.frontmatter
+const frontmatter = (Astro.props as any).frontmatter ?? Astro.props
+const { title, description, demo } = frontmatter as {
+  title: string
+  description?: string
+  demo?: 'vue' | 'react' | 'angular'
+}
+
+const normalizePath = (path: string) => path.replace(/\/$/, '') || '/'
+const currentPath = normalizePath(Astro.url.pathname)
+
+const links = [
+  { href: '/docs/getting-started', label: 'Getting started' },
+  { href: '/docs/vue', label: 'Vue' },
+  { href: '/docs/react', label: 'React' },
+  { href: '/docs/angular', label: 'Angular' },
+]
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="section" style="padding-top: 3.6rem;">
+    <div class="shell docs-grid" style="gap: 1.4rem;">
+      <aside class="glass card" data-aos="fade-up" data-aos-once="true" style="position: sticky; top: 5.8rem; padding:1.2rem; background:linear-gradient(180deg, rgba(10,18,34,0.72), rgba(6,12,24,0.94));">
+        <div class="eyebrow">Documentation</div>
+        <div class="docs-sidebar-links" style="display:grid; gap: 0.55rem;">
+          {links.map((link) => (
+            <a
+              href={link.href}
+              style={`padding: 0.9rem 1rem; border-radius: 16px; color:${currentPath === normalizePath(link.href) ? '#f7f9ff' : 'rgba(232,239,255,0.74)'}; background:${currentPath === normalizePath(link.href) ? 'linear-gradient(180deg, rgba(16,28,48,0.9), rgba(9,17,31,0.98))' : 'rgba(255,255,255,0.03)'}; border:1px solid ${currentPath === normalizePath(link.href) ? 'rgba(115,190,255,0.22)' : 'rgba(255,255,255,0.06)'}; box-shadow:${currentPath === normalizePath(link.href) ? '0 12px 28px rgba(0,0,0,0.24)' : 'none'};`}>
+              {link.label}
+            </a>
+          ))}
+        </div>
+      </aside>
+
+      <article class="prose glass" data-aos="fade-up" data-aos-delay="80" data-aos-once="true" style="background:linear-gradient(180deg, rgba(10,18,34,0.72), rgba(6,12,24,0.94));">
+        {demo && <DemoCallout framework={demo} />}
+        <slot />
+      </article>
+    </div>
+  </section>
+</BaseLayout>

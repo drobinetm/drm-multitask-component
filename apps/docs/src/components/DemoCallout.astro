@@ -1,0 +1,126 @@
+---
+interface Props {
+  framework: "vue" | "react" | "angular";
+}
+
+const { framework } = Astro.props;
+
+const config = {
+  vue: {
+    label: "Vue",
+    accent: "#41b883",
+    href: "/demos/vue/",
+  },
+  react: {
+    label: "React",
+    accent: "#61dafb",
+    href: "/demos/react/",
+  },
+  angular: {
+    label: "Angular",
+    accent: "#dd0031",
+    href: null, // not yet available
+  },
+} as const;
+
+const { label, accent, href } = config[framework];
+---
+
+<div class="demo-callout">
+  <div class="demo-callout__icon" aria-hidden="true">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="13,2 3,14 12,14 11,22 21,10 12,10" fill="currentColor"/>
+    </svg>
+  </div>
+  <div class="demo-callout__body">
+    <p class="demo-callout__title">Try it live</p>
+    <p class="demo-callout__desc">
+      {href
+        ? `Open a live ${label} demo — a real mini-app with router and multitabs already wired up, running directly in this page.`
+        : `The ${label} live demo is coming soon.`}
+    </p>
+  </div>
+  {href
+    ? (
+      <a href={href} class="demo-callout__btn">
+        Open {label} demo
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    )
+    : (
+      <span class="demo-callout__badge">Coming soon</span>
+    )
+  }
+</div>
+
+<style define:vars={{ accent }}>
+  .demo-callout {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    background: rgba(16, 28, 52, 0.72);
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin: 2rem 0;
+    flex-wrap: wrap;
+  }
+
+  .demo-callout__icon {
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .demo-callout__body {
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .demo-callout__title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--accent);
+    margin: 0 0 0.25rem;
+  }
+
+  .demo-callout__desc {
+    font-size: 0.88rem;
+    color: var(--text-muted, #94a3b8);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .demo-callout__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(180deg, #5a95c1 0%, #326776 100%);
+    color: #0a1628;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border-radius: 14px;
+    text-decoration: none;
+    white-space: nowrap;
+    align-self: center;
+    transition: opacity 0.15s;
+  }
+
+  .demo-callout__btn:hover {
+    opacity: 0.85;
+  }
+
+  .demo-callout__badge {
+    align-self: center;
+    padding: 0.35rem 0.85rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    font-size: 0.8rem;
+    color: #64748b;
+    white-space: nowrap;
+  }
+</style>

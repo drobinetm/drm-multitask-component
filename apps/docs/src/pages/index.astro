@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import HomeHero from '../components/HomeHero.astro'
+import FeatureGrid from '../components/FeatureGrid.astro'
+import InstallPanel from '../components/InstallPanel.astro'
+---
+
+<BaseLayout
+  title="@drm/multitabs | Router-native multitabs for Vue, React, and Angular applications"
+  description="Browser-tab-style navigation with drag and drop, persistence, reload hooks, and theme-ready styling."
+  hideSponsorCta={true}
+>
+  <HomeHero />
+  <FeatureGrid />
+  <InstallPanel />
+
+  <section class="section" style="padding-top: 1rem;" data-aos="fade-up" data-aos-once="true">
+    <div class="shell glass" style="padding:1.5rem; border-radius:36px; background:linear-gradient(180deg, rgba(10,18,34,0.72), rgba(6,12,24,0.94));">
+      <div class="section-heading-split" style="display:flex; align-items:end; justify-content:space-between; gap:1rem; margin-bottom:1.2rem; flex-wrap:wrap;">
+        <div>
+          <div class="eyebrow">Frameworks</div>
+          <h2 style="margin:0; max-width:15ch; font-size: clamp(2rem, 4vw, 3.7rem); line-height:0.92; letter-spacing:-0.05em;">One product direction, two frameworks, one library.</h2>
+        </div>
+        <p class="panel-copy" style="max-width:38ch;">The syntax changes where it should, but the mental model stays aligned across the monorepo.</p>
+      </div>
+
+      <div class="framework-grid" style="gap:1rem;">
+        <a class="glass card" href="/docs/vue" data-aos="fade-up" data-aos-delay="60" data-aos-once="true" style="padding:1.35rem; border-radius:24px; background:linear-gradient(180deg, rgba(16,28,48,0.78), rgba(9,17,31,0.92));">
+          <div class="eyebrow">Vue</div>
+          <h3 class="panel-title">Composition API first</h3>
+          <p class="panel-copy">Use <code>MultiTabs</code>, <code>useMultiTabs</code>, and <code>useTabContainerReload</code> with Vue Router.</p>
+        </a>
+        <a class="glass card" href="/docs/react" data-aos="fade-up" data-aos-delay="120" data-aos-once="true" style="padding:1.35rem; border-radius:24px; background:linear-gradient(180deg, rgba(16,28,48,0.78), rgba(9,17,31,0.92));">
+          <div class="eyebrow">React</div>
+          <h3 class="panel-title">Hook + provider model</h3>
+          <p class="panel-copy">Wrap your shell in <code>MultiTabsProvider</code> and keep routing with React Router.</p>
+        </a>
+        <a class="glass card" href="/docs/angular" data-aos="fade-up" data-aos-delay="180" data-aos-once="true" style="padding:1.35rem; border-radius:24px; background:linear-gradient(180deg, rgba(16,28,48,0.78), rgba(9,17,31,0.92));">
+          <div class="eyebrow">Angular</div>
+          <h3 class="panel-title">Standalone component + services</h3>
+          <p class="panel-copy">Use <code>MultiTabsComponent</code> with <code>MultiTabsService</code> and <code>TabReloadService</code>.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top: 1rem; padding-bottom: 5rem;" data-aos="fade-up" data-aos-once="true">
+    <div class="shell">
+      <div class="glass sustainability-panel" style="padding:2rem; border-radius:36px; display:grid; grid-template-columns: minmax(0, 1fr) auto; gap:1rem; align-items:center; background:linear-gradient(180deg, rgba(10,18,34,0.76), rgba(6,12,24,0.92));">
+        <div>
+          <div class="eyebrow">Sustainability</div>
+          <h2 style="margin:0 0 0.7rem; max-width:18ch; font-size: clamp(2rem, 4vw, 3.2rem); line-height:0.94; letter-spacing:-0.05em;">Support the project with direct funding options.</h2>
+          <p class="panel-copy" style="max-width:58ch;">The funding page centralizes recurring sponsorship, one-time support, and direct wallets for teams that prefer on-chain contributions.</p>
+        </div>
+        <a class="button button--primary" href="/support">Open support options</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
