@@ -31,21 +31,21 @@ declare var __VLS_1: {}, __VLS_7: {
         caseNumber?: string | null;
         caseTitle?: string | null;
     };
-}, __VLS_9: {}, __VLS_11: {}, __VLS_13: {}, __VLS_15: {}, __VLS_17: {};
+}, __VLS_9: {}, __VLS_11: {}, __VLS_17: {}, __VLS_19: {}, __VLS_25: {};
 type __VLS_Slots = {} & {
     'launcher-icon'?: (props: typeof __VLS_1) => any;
 } & {
     'tab-icon'?: (props: typeof __VLS_7) => any;
 } & {
-    'menu-icon-reload'?: (props: typeof __VLS_9) => any;
+    'close-icon'?: (props: typeof __VLS_9) => any;
 } & {
-    'menu-icon-close'?: (props: typeof __VLS_11) => any;
+    'dropdown-icon'?: (props: typeof __VLS_11) => any;
 } & {
-    'close-icon'?: (props: typeof __VLS_13) => any;
+    'menu-icon-reload'?: (props: typeof __VLS_17) => any;
 } & {
-    'dropdown-icon'?: (props: typeof __VLS_15) => any;
+    'menu-icon-close'?: (props: typeof __VLS_19) => any;
 } & {
-    'menu-icon-close-all'?: (props: typeof __VLS_17) => any;
+    'menu-icon-close-all'?: (props: typeof __VLS_25) => any;
 };
 declare const __VLS_component: import("vue").DefineComponent<__VLS_Props, {}, {}, {}, {}, import("vue").ComponentOptionsMixin, import("vue").ComponentOptionsMixin, {}, string, import("vue").PublicProps, Readonly<__VLS_Props> & Readonly<{}>, {}, {}, {}, {}, string, import("vue").ComponentProvideOptions, false, {}, any>;
 declare const _default: __VLS_WithSlots<typeof __VLS_component, __VLS_Slots>;

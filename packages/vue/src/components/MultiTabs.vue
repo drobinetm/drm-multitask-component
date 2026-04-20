@@ -32,7 +32,7 @@
           @dragover.prevent="handleDragOver(tab)"
           @drop.prevent="handleDrop(tab, $event)"
           @dragend="handleDragEnd"
-          @contextmenu.prevent="handleTabContextMenu(tab.id)"
+          @contextmenu.prevent="handleTabContextMenu(tab.id, $event)"
         >
           <div class="drm-multitabs__tab-shell">
             <!-- Tab button -->
@@ -70,32 +70,7 @@
               }}</span>
             </button>
 
-            <!-- Context menu -->
-            <div
-              v-if="activeTabMenuId === tab.id"
-              class="drm-multitabs__menu-card drm-multitabs__context-menu"
-              role="menu"
-              @click.stop
-            >
-              <button
-                class="drm-multitabs__menu-item"
-                type="button"
-                role="menuitem"
-                @click="handleReloadTab(tab)"
-              >
-                <slot name="menu-icon-reload">↺</slot>
-                Reload Tab
-              </button>
-              <button
-                class="drm-multitabs__menu-item drm-multitabs__menu-item--danger"
-                type="button"
-                role="menuitem"
-                @click="handleCloseTab(tab)"
-              >
-                <slot name="menu-icon-close">✕</slot>
-                Close Tab
-              </button>
-            </div>
+            <!-- Context menu rendered via Teleport to avoid overflow:hidden clipping -->
 
             <!-- Close button -->
             <button
@@ -113,52 +88,16 @@
       <!-- Dropdown: all tabs list -->
       <div class="drm-multitabs__dropdown-wrapper">
         <button
+          ref="dropdownButton"
           class="drm-multitabs__dropdown"
           type="button"
           aria-label="All tabs"
           aria-haspopup="true"
           :aria-expanded="dropdownOpen"
-          @click="dropdownOpen = !dropdownOpen"
+          @click="handleDropdownToggle"
         >
           <slot name="dropdown-icon">▾</slot>
         </button>
-
-        <div
-          v-if="dropdownOpen"
-          class="drm-multitabs__menu-card drm-multitabs__dropdown-menu"
-          role="menu"
-          @click.stop
-        >
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            class="drm-multitabs__menu-item"
-            :class="{
-              'drm-multitabs__menu-item--active': tab.id === currentTabId,
-            }"
-            type="button"
-            role="menuitem"
-            @click="handleDropdownTabClick(tab)"
-          >
-            {{
-              tab.caseNumber
-                ? `[${tab.caseNumber}] ${tab.caseTitle}`
-                : tab.title
-            }}
-          </button>
-
-          <hr class="drm-multitabs__menu-divider" />
-
-          <button
-            class="drm-multitabs__menu-item drm-multitabs__menu-item--danger"
-            type="button"
-            role="menuitem"
-            @click="handleCloseAllTabs"
-          >
-            <slot name="menu-icon-close-all">✕</slot>
-            Close All Tabs
-          </button>
-        </div>
       </div>
     </div>
 
@@ -168,11 +107,86 @@
       class="drm-multitabs__overlay"
       @click="closeAllMenus"
     />
+
+    <!-- Context menu: teleported to body to escape overflow:hidden containers -->
+    <Teleport to="body">
+      <div
+        v-if="activeTabMenuId !== null"
+        class="drm-multitabs__menu-card drm-multitabs__context-menu drm-multitabs__context-menu--fixed"
+        role="menu"
+        :style="{ left: menuPosition.x + 'px', top: menuPosition.y + 'px' }"
+        @click.stop
+      >
+        <template v-for="tab in tabs" :key="tab.id">
+          <template v-if="activeTabMenuId === tab.id">
+            <button
+              class="drm-multitabs__menu-item"
+              type="button"
+              role="menuitem"
+              @click="handleReloadTab(tab)"
+            >
+              <slot name="menu-icon-reload">↺</slot>
+              Reload Tab
+            </button>
+            <button
+              class="drm-multitabs__menu-item drm-multitabs__menu-item--danger"
+              type="button"
+              role="menuitem"
+              @click="handleCloseTab(tab)"
+            >
+              <slot name="menu-icon-close">✕</slot>
+              Close Tab
+            </button>
+          </template>
+        </template>
+      </div>
+    </Teleport>
+
+    <Teleport to="body">
+      <div
+        v-if="dropdownOpen"
+        class="drm-multitabs__menu-card drm-multitabs__dropdown-menu drm-multitabs__dropdown-menu--fixed"
+        role="menu"
+        :style="{
+          left: Math.max(12, dropdownPosition.x - 160) + 'px',
+          top: dropdownPosition.y + 'px',
+        }"
+        @click.stop
+      >
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          class="drm-multitabs__menu-item"
+          :class="{
+            'drm-multitabs__menu-item--active': tab.id === currentTabId,
+          }"
+          type="button"
+          role="menuitem"
+          @click="handleDropdownTabClick(tab)"
+        >
+          {{
+            tab.caseNumber ? `[${tab.caseNumber}] ${tab.caseTitle}` : tab.title
+          }}
+        </button>
+
+        <hr class="drm-multitabs__menu-divider" />
+
+        <button
+          class="drm-multitabs__menu-item drm-multitabs__menu-item--danger"
+          type="button"
+          role="menuitem"
+          @click="handleCloseAllTabs"
+        >
+          <slot name="menu-icon-close-all">✕</slot>
+          Close All Tabs
+        </button>
+      </div>
+    </Teleport>
   </nav>
 </template>
 
 <script setup lang="ts">
-import { shallowRef, computed } from "vue";
+import { shallowRef, computed, Teleport } from "vue";
 import { useMultiTabs } from "@/composables/useMultiTabs";
 import type { MultiTabItem, MultiTabsTheme } from "@/types";
 import "@/styles/multitabs.css";
@@ -205,9 +219,12 @@ const {
 // ---------------------------------------------------------------------------
 
 const activeTabMenuId = shallowRef<string | null>(null);
+const menuPosition = shallowRef<{ x: number; y: number }>({ x: 0, y: 0 });
+const dropdownPosition = shallowRef<{ x: number; y: number }>({ x: 0, y: 0 });
 const draggingTabId = shallowRef<string | null>(null);
 const dragOverTabId = shallowRef<string | null>(null);
 const dropdownOpen = shallowRef(false);
+const dropdownButton = shallowRef<HTMLElement | null>(null);
 
 // ---------------------------------------------------------------------------
 // Theme CSS vars
@@ -271,9 +288,27 @@ function handleReloadTab(tab: MultiTabItem) {
   reloadTab(tab);
 }
 
-function handleTabContextMenu(tabId: string) {
+function handleTabContextMenu(tabId: string, event: MouseEvent) {
+  event.preventDefault();
   dropdownOpen.value = false;
+  menuPosition.value = { x: event.clientX, y: event.clientY };
   activeTabMenuId.value = activeTabMenuId.value === tabId ? null : tabId;
+}
+
+function handleDropdownToggle() {
+  if (dropdownOpen.value) {
+    dropdownOpen.value = false;
+    return;
+  }
+
+  activeTabMenuId.value = null;
+
+  const rect = dropdownButton.value?.getBoundingClientRect();
+  if (rect) {
+    dropdownPosition.value = { x: rect.right, y: rect.bottom + 4 };
+  }
+
+  dropdownOpen.value = true;
 }
 
 function handleDropdownTabClick(tab: MultiTabItem) {
@@ -325,6 +360,22 @@ function handleDragEnd() {
 .drm-multitabs__context-menu {
   left: 0;
   right: auto;
+}
+
+.drm-multitabs__context-menu--fixed {
+  position: fixed;
+  top: auto;
+  left: auto;
+  right: auto;
+  z-index: 9999;
+}
+
+.drm-multitabs__dropdown-menu--fixed {
+  position: fixed;
+  top: auto;
+  left: auto;
+  right: auto;
+  z-index: 9999;
 }
 
 .drm-multitabs__menu-divider {
