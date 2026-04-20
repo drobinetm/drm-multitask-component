@@ -7,13 +7,11 @@ import '@fontsource/rajdhani/700.css'
 interface Props {
   title: string
   description?: string
-  hideSponsorCta?: boolean
 }
 
 const {
   title,
   description = 'Browser-tab-style navigation for Vue, React, and Angular applications.',
-  hideSponsorCta = false,
 } = Astro.props
 
 const navItems = [
@@ -1221,11 +1219,6 @@ const navItems = [
               {item.label}
             </a>
           ))}
-          {!hideSponsorCta && (
-            <a class="button button--primary" href="https://github.com/sponsors/drm-dev" target="_blank" rel="noreferrer">
-              Sponsor
-            </a>
-          )}
         </nav>
       </div>
     </header>
@@ -1245,12 +1238,6 @@ const navItems = [
             <a href="/docs/getting-started">Getting started</a>
             {' · '}
             <a href="/support">Support the project</a>
-            {!hideSponsorCta && (
-              <>
-                {' · '}
-                <a href="https://github.com/sponsors/drm-dev" target="_blank" rel="noreferrer">GitHub Sponsors</a>
-              </>
-            )}
           </div>
         </div>
       </div>
