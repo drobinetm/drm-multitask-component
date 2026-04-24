@@ -2,5 +2,5 @@
 "@drm/multitabs-vue": patch
 ---
 
-Enable npm publication for the Vue package through the GitHub Actions release
-workflow.
+Prepare the manual `0.1.2` release of the Vue package through the package-
+specific GitHub Actions workflow.

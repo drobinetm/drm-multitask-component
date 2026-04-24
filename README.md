@@ -84,6 +84,20 @@ deployment workflow for production publishes from `main`.
 - Support page: `apps/docs/src/pages/support.astro`
 - Stack-specific docs: `apps/docs/src/pages/docs/*`
 
+## Release policy
+
+Package releases currently use a manual versioning model.
+
+- Bump the target package version manually in that package's `package.json`.
+- Add a Changeset for the package you want to release.
+- Let the package-specific workflow publish to npm.
+- Treat the global `release.yml` workflow as a manual fallback, not the default
+  publication path.
+
+The source of truth for the release version is the package's `package.json`.
+Changesets communicate release intent and release notes, but they do not derive
+the package version automatically in the current workflow model.
+
 ## Funding
 
 The project supports multiple funding channels so individuals and teams can use
