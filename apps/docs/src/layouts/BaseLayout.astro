@@ -1,4 +1,6 @@
 ---
+import { ClientRouter } from 'astro:transitions'
+
 import '@fontsource/rajdhani/400.css'
 import '@fontsource/rajdhani/500.css'
 import '@fontsource/rajdhani/600.css'
@@ -36,6 +38,7 @@ const isNavItemCurrent = (href: string) => {
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <ClientRouter />
     <style is:global>
       :root {
         --bg: #020103;
@@ -1329,12 +1332,24 @@ const isNavItemCurrent = (href: string) => {
 
       document.addEventListener('astro:page-load', bootCopyButtons);
 
-      AOS.init({
-        duration: 700,
-        easing: 'ease-out-cubic',
-        once: true,
-        offset: 72,
-      });
+      const bootAos = () => {
+        if (!window.__drmDocsAosInitialized) {
+          AOS.init({
+            duration: 700,
+            easing: 'ease-out-cubic',
+            once: true,
+            offset: 72,
+          });
+
+          window.__drmDocsAosInitialized = true;
+          return;
+        }
+
+        AOS.refreshHard();
+      };
+
+      bootAos();
+      document.addEventListener('astro:page-load', bootAos);
     </script>
   </body>
 </html>
