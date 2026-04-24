@@ -19,6 +19,13 @@ const navItems = [
   { href: '/docs/getting-started', label: 'Docs' },
   { href: '/support', label: 'Support' },
 ]
+
+const normalizePath = (path: string) => path.replace(/\/$/, '') || '/'
+const currentPath = normalizePath(Astro.url.pathname)
+const isNavItemCurrent = (href: string) => {
+  if (href === '/docs/getting-started') return currentPath === '/docs/getting-started' || currentPath.startsWith('/docs/')
+  return currentPath === normalizePath(href)
+}
 ---
 
 <!doctype html>
@@ -1226,7 +1233,7 @@ const navItems = [
 
         <nav class="nav" aria-label="Primary">
           {navItems.map((item) => (
-            <a href={item.href} aria-current={Astro.url.pathname === item.href ? 'page' : undefined}>
+            <a href={item.href} aria-current={isNavItemCurrent(item.href) ? 'page' : undefined}>
               {item.label}
             </a>
           ))}
