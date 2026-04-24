@@ -1,6 +1,6 @@
 {
   "name": "@drobinetm/multitabs-react",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "Browser-tab-style navigation component for React",
   "keywords": [
     "react",
@@ -10,10 +10,10 @@
     "router",
     "react-router"
   ],
-  "homepage": "https://drm-multitabs.dev/docs/react",
+  "homepage": "https://drm-multitabs-docs.netlify.app/docs/react",
   "repository": {
     "type": "git",
-    "url": "https://github.com/drm-dev/multitabs",
+    "url": "git+https://github.com/drobinetm/drm-multitask-component.git",
     "directory": "packages/react"
   },
   "license": "MIT",

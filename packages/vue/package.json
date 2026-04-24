@@ -1,6 +1,6 @@
 {
   "name": "@drobinetm/multitabs-vue",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "Browser-tab-style navigation component for Vue 3",
   "keywords": [
     "vue",
@@ -10,10 +10,10 @@
     "router",
     "vue3"
   ],
-  "homepage": "https://drm-multitabs.dev/docs/vue",
+  "homepage": "https://drm-multitabs-docs.netlify.app/docs/vue",
   "repository": {
     "type": "git",
-    "url": "https://github.com/drm-dev/multitabs",
+    "url": "git+https://github.com/drobinetm/drm-multitask-component.git",
     "directory": "packages/vue"
   },
   "license": "MIT",

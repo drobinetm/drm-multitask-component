@@ -9,10 +9,10 @@
     "multitabs",
     "router"
   ],
-  "homepage": "https://drm-multitabs.dev/docs/angular",
+  "homepage": "https://drm-multitabs-docs.netlify.app/docs/angular",
   "repository": {
     "type": "git",
-    "url": "https://github.com/drm-dev/multitabs",
+    "url": "git+https://github.com/drobinetm/drm-multitask-component.git",
     "directory": "packages/angular"
   },
   "license": "MIT",

@@ -2,4 +2,5 @@
 "@drobinetm/multitabs-react": patch
 ---
 
-Prepare the manual `0.1.1` release of the React package through the package-specific GitHub Actions workflow.
+Migrate the React package to the `@drobinetm` scope, switch CI publish to
+Trusted Publishing, and point npm metadata to the Netlify docs site.

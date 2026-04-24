@@ -2,5 +2,5 @@
 "@drobinetm/multitabs-vue": patch
 ---
 
-Prepare the manual `0.1.2` release of the Vue package through the package-
-specific GitHub Actions workflow.
+Migrate the Vue package to the `@drobinetm` scope, switch CI publish to
+Trusted Publishing, and point npm metadata to the Netlify docs site.
