@@ -8,8 +8,6 @@ multiple live records open at once.
 [![Monorepo](https://img.shields.io/badge/monorepo-pnpm-F69220?logo=pnpm&logoColor=white)](./pnpm-workspace.yaml)
 [![Build](https://img.shields.io/badge/build-turborepo-111827?logo=turborepo&logoColor=white)](./turbo.json)
 [![Docs](https://img.shields.io/badge/docs-Astro-FF5D01?logo=astro&logoColor=white)](./apps/docs)
-[![Docs CI](https://github.com/drm-dev/multitabs/actions/workflows/docs.yml/badge.svg)](https://github.com/drm-dev/multitabs/actions/workflows/docs.yml)
-[![Docs Deploy](https://github.com/drm-dev/multitabs/actions/workflows/docs-deploy.yml/badge.svg)](https://github.com/drm-dev/multitabs/actions/workflows/docs-deploy.yml)
 [![Vue](https://img.shields.io/npm/v/%40drm%2Fmultitabs-vue?logo=vue.js&label=vue)](https://www.npmjs.com/package/@drm/multitabs-vue)
 [![React](https://img.shields.io/npm/v/%40drm%2Fmultitabs-react?logo=react&label=react)](https://www.npmjs.com/package/@drm/multitabs-react)
 [![Angular](https://img.shields.io/npm/v/%40drm%2Fmultitabs-angular?logo=angular&label=angular)](https://www.npmjs.com/package/@drm/multitabs-angular)
