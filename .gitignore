@@ -42,6 +42,8 @@ RUN.md
 .claude
 .agents
 .skills-lock.json
+skills-lock.json
 .skills.json
+skills.json
 openspec
 .opencode

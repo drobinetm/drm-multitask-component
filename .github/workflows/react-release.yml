@@ -1,0 +1,78 @@
+name: React Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - packages/react/**
+      - .changeset/**
+      - pnpm-lock.yaml
+      - package.json
+      - .github/workflows/react-release.yml
+  workflow_dispatch:
+    inputs:
+      dist-tag:
+        description: npm dist-tag to publish
+        required: false
+        default: latest
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: read
+
+jobs:
+  release-react:
+    name: Release React package
+    runs-on: ubuntu-latest
+    env:
+      NPM_DIST_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.dist-tag || 'latest' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build React package
+        run: pnpm --filter @drm/multitabs-react build
+
+      - name: Detect React changeset
+        id: react_changeset
+        run: |
+          if ls .changeset/*.md >/dev/null 2>&1 && rg -l '"@drm/multitabs-react"' .changeset/*.md >/dev/null 2>&1; then
+            echo "has_changeset=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changeset=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip publish when no React changeset exists
+        if: steps.react_changeset.outputs.has_changeset != 'true'
+        run: echo "No changeset for @drm/multitabs-react was found. Skipping publish."
+
+      - name: Ensure version is not already published
+        if: steps.react_changeset.outputs.has_changeset == 'true'
+        run: |
+          VERSION=$(node -p "require('./packages/react/package.json').version")
+          if npm view "@drm/multitabs-react@${VERSION}" version >/dev/null 2>&1; then
+            echo "Version ${VERSION} is already published to npm"
+            exit 1
+          fi
+
+      - name: Release React package
+        if: steps.react_changeset.outputs.has_changeset == 'true'
+        run: pnpm --filter @drm/multitabs-react exec npm publish --access public --tag "$NPM_DIST_TAG"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

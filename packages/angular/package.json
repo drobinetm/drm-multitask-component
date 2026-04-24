@@ -27,6 +27,9 @@
   "main": "./dist/fesm2022/drm-multitabs-angular.mjs",
   "module": "./dist/fesm2022/drm-multitabs-angular.mjs",
   "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist"
   ],
