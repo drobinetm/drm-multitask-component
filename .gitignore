@@ -43,3 +43,5 @@ RUN.md
 .agents
 .skills-lock.json
 .skills.json
+openspec
+.opencode
