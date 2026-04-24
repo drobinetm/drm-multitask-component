@@ -6,9 +6,6 @@ on:
       - main
     paths:
       - packages/angular/**
-      - .changeset/**
-      - pnpm-lock.yaml
-      - package.json
       - .github/workflows/angular-release.yml
   workflow_dispatch:
     inputs:
@@ -52,7 +49,9 @@ jobs:
       - name: Detect Angular changeset
         id: angular_changeset
         run: |
-          if ls .changeset/*.md >/dev/null 2>&1 && rg -l '"@drm/multitabs-angular"' .changeset/*.md >/dev/null 2>&1; then
+          FOUND=$(grep -rl '@drm/multitabs-angular' .changeset/ 2>/dev/null || true)
+          echo "Changeset files found: ${FOUND:-none}"
+          if [ -n "$FOUND" ]; then
             echo "has_changeset=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_changeset=false" >> "$GITHUB_OUTPUT"

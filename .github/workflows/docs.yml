@@ -5,23 +5,11 @@ on:
     branches: [main, develop]
     paths:
       - "apps/docs/**"
-      - "packages/react/**"
-      - "packages/vue/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
-      - "turbo.json"
       - ".github/workflows/docs.yml"
   pull_request:
     branches: [main]
     paths:
       - "apps/docs/**"
-      - "packages/react/**"
-      - "packages/vue/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
-      - "turbo.json"
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
