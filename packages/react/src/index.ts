@@ -1,4 +1,4 @@
-// Public API for @drm/multitabs-react
+// Public API for @drobinetm/multitabs-react
 export { MultiTabs, MultiTabsProvider } from "./components/MultiTabs";
 export { useMultiTabs, generateTabId } from "./hooks/useMultiTabs";
 export {

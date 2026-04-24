@@ -35,7 +35,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build docs app and workspace deps
-        run: pnpm turbo run build --filter=@drm/multitabs-docs
+        run: pnpm turbo run build --filter=@drobinetm/multitabs-docs
 
       - name: Check docs app
-        run: pnpm --filter @drm/multitabs-docs lint
+        run: pnpm --filter @drobinetm/multitabs-docs lint

@@ -1,13 +1,13 @@
 ---
 layout: ../../layouts/DocsLayout.astro
-title: React | @drm/multitabs
-description: Use @drm/multitabs-react with React and React Router.
+title: React | @drobinetm/multitabs
+description: Use @drobinetm/multitabs-react with React and React Router.
 demo: react
 ---
 
 # React
 
-`@drm/multitabs-react` exposes a hook-driven model with a provider so your tab
+`@drobinetm/multitabs-react` exposes a hook-driven model with a provider so your tab
 state can live at the application shell level.
 
 ## Install
@@ -15,7 +15,7 @@ state can live at the application shell level.
 Install the package together with `react-router-dom`.
 
 ```bash
-pnpm add @drm/multitabs-react react-router-dom
+pnpm add @drobinetm/multitabs-react react-router-dom
 ```
 
 ## Basic usage
@@ -25,8 +25,8 @@ rest of the routed content.
 
 ```tsx
 import { Outlet } from "react-router-dom";
-import { MultiTabs, MultiTabsProvider } from "@drm/multitabs-react";
-import "@drm/multitabs-react/styles";
+import { MultiTabs, MultiTabsProvider } from "@drobinetm/multitabs-react";
+import "@drobinetm/multitabs-react/styles";
 
 export function AppShell() {
   return (
@@ -43,7 +43,7 @@ export function AppShell() {
 Use `useMultiTabs()` to read or manipulate the current workspace tab state.
 
 ```tsx
-import { useMultiTabs } from "@drm/multitabs-react";
+import { useMultiTabs } from "@drobinetm/multitabs-react";
 
 function TabInspector() {
   const { tabs, currentTabId, moveTab } = useMultiTabs();
@@ -61,7 +61,7 @@ reload actions.
 
 ```tsx
 import { useEffect } from "react";
-import { useTabContainerReload } from "@drm/multitabs-react";
+import { useTabContainerReload } from "@drobinetm/multitabs-react";
 
 function CasePanel({ tabId }: { tabId: string }) {
   const nonce = useTabContainerReload(tabId);

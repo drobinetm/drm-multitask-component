@@ -1,5 +1,5 @@
 {
-  "name": "@drm/multitabs-docs",
+  "name": "@drobinetm/multitabs-docs",
   "version": "0.1.1",
   "private": true,
   "type": "module",
@@ -22,8 +22,8 @@
     "react-router-dom": "^6.30.3",
     "vue": "^3.5.32",
     "vue-router": "^4.6.4",
-    "@drm/multitabs-vue": "workspace:*",
-    "@drm/multitabs-react": "workspace:*"
+    "@drobinetm/multitabs-vue": "workspace:*",
+    "@drobinetm/multitabs-react": "workspace:*"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",

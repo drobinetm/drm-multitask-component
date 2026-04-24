@@ -1,5 +1,5 @@
 [build]
-  command = "pnpm turbo run build --filter=@drm/multitabs-docs"
+  command = "pnpm turbo run build --filter=@drobinetm/multitabs-docs"
   publish = "apps/docs/dist"
 
 [build.environment]

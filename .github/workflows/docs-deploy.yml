@@ -34,13 +34,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build docs app and workspace deps
-        run: pnpm turbo run build --filter=@drm/multitabs-docs
+        run: pnpm turbo run build --filter=@drobinetm/multitabs-docs
 
       - name: Check docs app
-        run: pnpm --filter @drm/multitabs-docs lint
+        run: pnpm --filter @drobinetm/multitabs-docs lint
 
       - name: Deploy to Netlify
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        run: pnpm dlx --package=netlify-cli netlify deploy --filter @drm/multitabs-docs --dir=apps/docs/dist --prod --site="$NETLIFY_SITE_ID" --auth="$NETLIFY_AUTH_TOKEN"
+        run: pnpm dlx --package=netlify-cli netlify deploy --filter @drobinetm/multitabs-docs --dir=apps/docs/dist --prod --site="$NETLIFY_SITE_ID" --auth="$NETLIFY_AUTH_TOKEN"

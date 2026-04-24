@@ -1,13 +1,13 @@
 ---
 layout: ../../layouts/DocsLayout.astro
-title: Angular | @drm/multitabs
-description: Use @drm/multitabs-angular with Angular Router.
+title: Angular | @drobinetm/multitabs
+description: Use @drobinetm/multitabs-angular with Angular Router.
 demo: angular
 ---
 
 # Angular
 
-`@drm/multitabs-angular` follows Angular conventions with a standalone
+`@drobinetm/multitabs-angular` follows Angular conventions with a standalone
 component, a main service for tab state, and a dedicated reload service.
 
 ## Install
@@ -15,7 +15,7 @@ component, a main service for tab state, and a dedicated reload service.
 Install the Angular package in your app.
 
 ```bash
-pnpm add @drm/multitabs-angular
+pnpm add @drobinetm/multitabs-angular
 ```
 
 ## Basic usage
@@ -26,7 +26,7 @@ outlet.
 ```ts
 import { Component } from "@angular/core";
 import { RouterOutlet } from "@angular/router";
-import { MultiTabsComponent } from "@drm/multitabs-angular";
+import { MultiTabsComponent } from "@drobinetm/multitabs-angular";
 
 @Component({
   selector: "app-shell",
@@ -47,7 +47,7 @@ shell.
 
 ```ts
 import { inject } from "@angular/core";
-import { MultiTabsService } from "@drm/multitabs-angular";
+import { MultiTabsService } from "@drobinetm/multitabs-angular";
 
 const tabs = inject(MultiTabsService);
 

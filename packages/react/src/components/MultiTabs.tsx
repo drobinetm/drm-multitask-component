@@ -26,7 +26,7 @@ function useMultiTabsContext(): UseMultiTabsReturn {
   const ctx = useContext(MultiTabsContext);
   if (!ctx) {
     throw new Error(
-      "[@drm/multitabs-react] useMultiTabsContext must be used within <MultiTabsProvider>",
+      "[@drobinetm/multitabs-react] useMultiTabsContext must be used within <MultiTabsProvider>",
     );
   }
   return ctx;

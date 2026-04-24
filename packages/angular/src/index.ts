@@ -1,4 +1,4 @@
-// Public API for @drm/multitabs-angular
+// Public API for @drobinetm/multitabs-angular
 export { MultiTabsComponent } from "./components/multi-tabs.component";
 export {
   MultiTabsService,

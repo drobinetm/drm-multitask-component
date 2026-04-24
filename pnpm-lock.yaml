@@ -47,10 +47,10 @@ importers:
       '@astrojs/vue':
         specifier: ^5.1.4
         version: 5.1.4(astro@5.18.1(less@4.6.4)(rollup@4.60.1)(sass@1.99.0)(typescript@5.9.3)(yaml@2.8.3))(less@4.6.4)(rollup@4.60.1)(sass@1.99.0)(vue@3.5.32(typescript@5.9.3))(yaml@2.8.3)
-      '@drm/multitabs-react':
+      '@drobinetm/multitabs-react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@drm/multitabs-vue':
+      '@drobinetm/multitabs-vue':
         specifier: workspace:*
         version: link:../../packages/vue
       '@fontsource/rajdhani':

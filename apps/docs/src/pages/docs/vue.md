@@ -1,13 +1,13 @@
 ---
 layout: ../../layouts/DocsLayout.astro
-title: Vue | @drm/multitabs
-description: Use @drm/multitabs-vue with Vue 3 and Vue Router.
+title: Vue | @drobinetm/multitabs
+description: Use @drobinetm/multitabs-vue with Vue 3 and Vue Router.
 demo: vue
 ---
 
 # Vue
 
-`@drm/multitabs-vue` is the closest implementation to the original component.
+`@drobinetm/multitabs-vue` is the closest implementation to the original component.
 It uses a visual component plus two composables.
 
 ## Install
@@ -16,7 +16,7 @@ Install the package together with `vue-router` if your project does not already
 include it.
 
 ```bash
-pnpm add @drm/multitabs-vue vue-router
+pnpm add @drobinetm/multitabs-vue vue-router
 ```
 
 ## Basic usage
@@ -26,8 +26,8 @@ change below it.
 
 ```vue
 <script setup lang="ts">
-import { MultiTabs } from "@drm/multitabs-vue";
-import "@drm/multitabs-vue/styles";
+import { MultiTabs } from "@drobinetm/multitabs-vue";
+import "@drobinetm/multitabs-vue/styles";
 </script>
 
 <template>
@@ -41,7 +41,7 @@ import "@drm/multitabs-vue/styles";
 Use `useMultiTabs()` when you need the tab state and actions directly.
 
 ```ts
-import { useMultiTabs } from "@drm/multitabs-vue";
+import { useMultiTabs } from "@drobinetm/multitabs-vue";
 
 const { tabs, currentTabId, closeTab, reloadTab } = useMultiTabs();
 ```
@@ -51,7 +51,7 @@ trigger a refetch or remount.
 
 ```ts
 import { computed, watch } from "vue";
-import { useTabContainerReload } from "@drm/multitabs-vue";
+import { useTabContainerReload } from "@drobinetm/multitabs-vue";
 
 const { getReloadNonce } = useTabContainerReload();
 const nonce = computed(() => getReloadNonce("case-tab-id"));

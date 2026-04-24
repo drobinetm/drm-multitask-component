@@ -10,8 +10,8 @@ export default defineConfig({
     optimizeDeps: {
       include: [
         "react-router-dom",
-        "@drm/multitabs-react",
-        "@drm/multitabs-vue",
+        "@drobinetm/multitabs-react",
+        "@drobinetm/multitabs-vue",
         "vue-router",
       ],
     },

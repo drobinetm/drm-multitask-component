@@ -1,5 +1,5 @@
 {
-  "name": "@drm/multitabs-vue",
+  "name": "@drobinetm/multitabs-vue",
   "version": "0.1.2",
   "description": "Browser-tab-style navigation component for Vue 3",
   "keywords": [

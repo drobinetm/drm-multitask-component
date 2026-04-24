@@ -1,6 +1,6 @@
 import { MemoryRouter, Routes, Route, useNavigate } from "react-router-dom";
-import { MultiTabs, MultiTabsProvider } from "@drm/multitabs-react";
-import "@drm/multitabs-react/styles";
+import { MultiTabs, MultiTabsProvider } from "@drobinetm/multitabs-react";
+import "@drobinetm/multitabs-react/styles";
 
 const reactTheme = {
   shellBg: "rgba(97, 218, 251, 0.08)",

@@ -44,12 +44,12 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build Angular package
-        run: pnpm --filter @drm/multitabs-angular build
+        run: pnpm --filter @drobinetm/multitabs-angular build
 
       - name: Detect Angular changeset
         id: angular_changeset
         run: |
-          FOUND=$(grep -rl '@drm/multitabs-angular' .changeset/ 2>/dev/null || true)
+          FOUND=$(grep -rl '@drobinetm/multitabs-angular' .changeset/ 2>/dev/null || true)
           echo "Changeset files found: ${FOUND:-none}"
           if [ -n "$FOUND" ]; then
             echo "has_changeset=true" >> "$GITHUB_OUTPUT"
@@ -59,19 +59,19 @@ jobs:
 
       - name: Skip publish when no Angular changeset exists
         if: steps.angular_changeset.outputs.has_changeset != 'true'
-        run: echo "No changeset for @drm/multitabs-angular was found. Skipping publish."
+        run: echo "No changeset for @drobinetm/multitabs-angular was found. Skipping publish."
 
       - name: Ensure version is not already published
         if: steps.angular_changeset.outputs.has_changeset == 'true'
         run: |
           VERSION=$(node -p "require('./packages/angular/package.json').version")
-          if npm view "@drm/multitabs-angular@${VERSION}" version >/dev/null 2>&1; then
+          if npm view "@drobinetm/multitabs-angular@${VERSION}" version >/dev/null 2>&1; then
             echo "Version ${VERSION} is already published to npm"
             exit 1
           fi
 
       - name: Release Angular package
         if: steps.angular_changeset.outputs.has_changeset == 'true'
-        run: pnpm --filter @drm/multitabs-angular exec npm publish --access public --tag "$NPM_DIST_TAG"
+        run: pnpm --filter @drobinetm/multitabs-angular exec npm publish --access public --tag "$NPM_DIST_TAG"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

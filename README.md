@@ -1,6 +1,6 @@
-# @drm/multitabs
+# @drobinetm/multitabs
 
-`@drm/multitabs` is a monorepo for browser-tab-style navigation components in
+`@drobinetm/multitabs` is a monorepo for browser-tab-style navigation components in
 Vue, React, and Angular applications. It is designed for dense application shells such as
 claims systems, CRMs, internal dashboards, and admin tools where users keep
 multiple live records open at once.
@@ -8,9 +8,9 @@ multiple live records open at once.
 [![Monorepo](https://img.shields.io/badge/monorepo-pnpm-F69220?logo=pnpm&logoColor=white)](./pnpm-workspace.yaml)
 [![Build](https://img.shields.io/badge/build-turborepo-111827?logo=turborepo&logoColor=white)](./turbo.json)
 [![Docs](https://img.shields.io/badge/docs-Astro-FF5D01?logo=astro&logoColor=white)](./apps/docs)
-[![Vue](https://img.shields.io/npm/v/%40drm%2Fmultitabs-vue?logo=vue.js&label=vue)](https://www.npmjs.com/package/@drm/multitabs-vue)
-[![React](https://img.shields.io/npm/v/%40drm%2Fmultitabs-react?logo=react&label=react)](https://www.npmjs.com/package/@drm/multitabs-react)
-[![Angular](https://img.shields.io/npm/v/%40drm%2Fmultitabs-angular?logo=angular&label=angular)](https://www.npmjs.com/package/@drm/multitabs-angular)
+[![Vue](https://img.shields.io/npm/v/%40drm%2Fmultitabs-vue?logo=vue.js&label=vue)](https://www.npmjs.com/package/@drobinetm/multitabs-vue)
+[![React](https://img.shields.io/npm/v/%40drm%2Fmultitabs-react?logo=react&label=react)](https://www.npmjs.com/package/@drobinetm/multitabs-react)
+[![Angular](https://img.shields.io/npm/v/%40drm%2Fmultitabs-angular?logo=angular&label=angular)](https://www.npmjs.com/package/@drobinetm/multitabs-angular)
 
 ## What this repo contains
 
@@ -19,9 +19,9 @@ tooling needed to build and release the project.
 
 | Path               | Purpose                                        |
 | ------------------ | ---------------------------------------------- |
-| `packages/vue`     | `@drm/multitabs-vue`                           |
-| `packages/react`   | `@drm/multitabs-react`                         |
-| `packages/angular` | `@drm/multitabs-angular`                       |
+| `packages/vue`     | `@drobinetm/multitabs-vue`                           |
+| `packages/react`   | `@drobinetm/multitabs-react`                         |
+| `packages/angular` | `@drobinetm/multitabs-angular`                       |
 | `apps/docs`        | Astro landing page and documentation site      |
 | `configs`          | Shared TypeScript, ESLint, and Prettier config |
 | `.github`          | CI, release automation, and funding metadata   |
@@ -45,9 +45,9 @@ You install the package that matches your stack. All packages can be
 installed with `pnpm`, `npm`, or `yarn`.
 
 ```bash
-pnpm add @drm/multitabs-vue
-npm install @drm/multitabs-react
-yarn add @drm/multitabs-angular
+pnpm add @drobinetm/multitabs-vue
+npm install @drobinetm/multitabs-react
+yarn add @drobinetm/multitabs-angular
 ```
 
 ## Development
@@ -65,9 +65,9 @@ pnpm test
 For package-specific work, filter the workspace.
 
 ```bash
-pnpm --filter @drm/multitabs-vue build
-pnpm --filter @drm/multitabs-react dev
-pnpm --filter @drm/multitabs-docs dev
+pnpm --filter @drobinetm/multitabs-vue build
+pnpm --filter @drobinetm/multitabs-react dev
+pnpm --filter @drobinetm/multitabs-docs dev
 ```
 
 ## Documentation

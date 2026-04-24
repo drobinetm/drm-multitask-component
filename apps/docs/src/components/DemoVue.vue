@@ -8,8 +8,8 @@ import {
   onUnmounted,
 } from "vue";
 import { createRouter, createMemoryHistory, RouterView } from "vue-router";
-import { MultiTabs } from "@drm/multitabs-vue";
-import "@drm/multitabs-vue/styles";
+import { MultiTabs } from "@drobinetm/multitabs-vue";
+import "@drobinetm/multitabs-vue/styles";
 
 const vueTheme = {
   shellBg: "rgba(65, 184, 131, 0.08)",

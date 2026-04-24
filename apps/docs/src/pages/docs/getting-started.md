@@ -1,12 +1,12 @@
 ---
 layout: ../../layouts/DocsLayout.astro
-title: Getting started | @drm/multitabs
-description: Install and start using @drm/multitabs in Vue, React, or Angular applications.
+title: Getting started | @drobinetm/multitabs
+description: Install and start using @drobinetm/multitabs in Vue, React, or Angular applications.
 ---
 
 # Getting started
 
-`@drm/multitabs` gives your SPA a browser-style tab layer with router-aware
+`@drobinetm/multitabs` gives your SPA a browser-style tab layer with router-aware
 navigation, persistence, drag and drop, close actions, and reload hooks.
 
 ## Choose a package
@@ -15,18 +15,18 @@ Pick the package that matches your stack.
 
 | Framework | Package                  |
 | --------- | ------------------------ |
-| Vue 3     | `@drm/multitabs-vue`     |
-| React     | `@drm/multitabs-react`   |
-| Angular   | `@drm/multitabs-angular` |
+| Vue 3     | `@drobinetm/multitabs-vue`     |
+| React     | `@drobinetm/multitabs-react`   |
+| Angular   | `@drobinetm/multitabs-angular` |
 
 ## Install with your package manager
 
 Install one of the packages with `pnpm`, `npm`, or `yarn`.
 
 ```bash
-pnpm add @drm/multitabs-vue
-npm install @drm/multitabs-vue
-yarn add @drm/multitabs-vue
+pnpm add @drobinetm/multitabs-vue
+npm install @drobinetm/multitabs-vue
+yarn add @drobinetm/multitabs-vue
 ```
 
 Replace the package name with the React or Angular variant when needed.
