@@ -24,6 +24,7 @@ const navItems = [
 
 const normalizePath = (path: string) => path.replace(/\/$/, '') || '/'
 const currentPath = normalizePath(Astro.url.pathname)
+const enableClientRouter = !currentPath.startsWith('/docs/')
 const isNavItemCurrent = (href: string) => {
   if (href === '/docs/getting-started') return currentPath === '/docs/getting-started' || currentPath.startsWith('/docs/')
   return currentPath === normalizePath(href)
@@ -37,8 +38,9 @@ const isNavItemCurrent = (href: string) => {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
-    <ClientRouter />
+    {enableClientRouter && <ClientRouter />}
     <style is:global>
       :root {
         --bg: #020103;
@@ -1332,8 +1334,10 @@ const isNavItemCurrent = (href: string) => {
 
       document.addEventListener('astro:page-load', bootCopyButtons);
 
+      const docsWindow = window as Window & { __drmDocsAosInitialized?: boolean };
+
       const bootAos = () => {
-        if (!window.__drmDocsAosInitialized) {
+        if (!docsWindow.__drmDocsAosInitialized) {
           AOS.init({
             duration: 700,
             easing: 'ease-out-cubic',
@@ -1341,7 +1345,7 @@ const isNavItemCurrent = (href: string) => {
             offset: 72,
           });
 
-          window.__drmDocsAosInitialized = true;
+          docsWindow.__drmDocsAosInitialized = true;
           return;
         }
 

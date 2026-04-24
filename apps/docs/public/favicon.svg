@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="DRM Multitabs favicon">
+  <defs>
+    <linearGradient id="bg" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f6dff"/>
+      <stop offset="1" stop-color="#59d5ff"/>
+    </linearGradient>
+    <linearGradient id="tab" x1="16" y1="12" x2="48" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f7f9ff" stop-opacity="0.92"/>
+      <stop offset="1" stop-color="#d8f4ff" stop-opacity="0.72"/>
+    </linearGradient>
+  </defs>
+  <rect x="6" y="6" width="52" height="52" rx="16" fill="#071422"/>
+  <rect x="6" y="6" width="52" height="52" rx="16" fill="url(#bg)" fill-opacity="0.22"/>
+  <rect x="14" y="16" width="36" height="9" rx="4.5" fill="url(#tab)"/>
+  <rect x="14" y="28" width="24" height="8" rx="4" fill="#c5edff" fill-opacity="0.82"/>
+  <rect x="14" y="39" width="30" height="8" rx="4" fill="#9edfff" fill-opacity="0.58"/>
+  <rect x="6.5" y="6.5" width="51" height="51" rx="15.5" fill="none" stroke="#8bc9ff" stroke-opacity="0.35"/>
+</svg>

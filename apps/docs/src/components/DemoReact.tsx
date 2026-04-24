@@ -1,6 +1,17 @@
-import { MemoryRouter, Routes, Route, Link } from "react-router-dom";
+import { MemoryRouter, Routes, Route, useNavigate } from "react-router-dom";
 import { MultiTabs, MultiTabsProvider } from "@drm/multitabs-react";
 import "@drm/multitabs-react/styles";
+
+const reactTheme = {
+  shellBg: "rgba(97, 218, 251, 0.08)",
+  tabBg: "rgba(255, 255, 255, 0.05)",
+  tabColor: "#d8f7ff",
+  activeTabBg: "#61dafb",
+  activeTabColor: "#08131f",
+  activeTabBorderColor: "#61dafb",
+  closeHoverColor: "#61dafb",
+  dragOverColor: "#61dafb",
+} as const;
 
 // ─── SVG icons (avoids Unicode glyph dependency on Rajdhani) ─────────────────
 
@@ -83,14 +94,28 @@ const IconTab = () => (
 // ─── Page components ──────────────────────────────────────────────────────────
 
 function HomePage() {
+  const navigate = useNavigate();
+
+  const openDemoRoute =
+    (path: string) => (event: React.MouseEvent<HTMLAnchorElement>) => {
+      event.preventDefault();
+      navigate(path);
+    };
+
   return (
     <div className="demo-page">
       <h2>Welcome</h2>
       <p>Navigate using the links below to open new tabs.</p>
       <nav className="demo-nav">
-        <Link to="/about">About</Link>
-        <Link to="/reports">Reports</Link>
-        <Link to="/settings">Settings</Link>
+        <a href="#" onClick={openDemoRoute("/about")}>
+          About
+        </a>
+        <a href="#" onClick={openDemoRoute("/reports")}>
+          Reports
+        </a>
+        <a href="#" onClick={openDemoRoute("/settings")}>
+          Settings
+        </a>
       </nav>
     </div>
   );
@@ -140,8 +165,9 @@ export default function DemoReact() {
       }}
     >
       <MemoryRouter initialEntries={["/"]}>
-        <MultiTabsProvider>
+        <MultiTabsProvider options={{ storageKey: "drm-multitabs-demo-react" }}>
           <MultiTabs
+            theme={reactTheme}
             launcherIcon={<IconLauncher />}
             tabIcon={() => <IconTab />}
             closeIcon={<IconClose />}

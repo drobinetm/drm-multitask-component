@@ -11,6 +11,17 @@ import { createRouter, createMemoryHistory, RouterView } from "vue-router";
 import { MultiTabs } from "@drm/multitabs-vue";
 import "@drm/multitabs-vue/styles";
 
+const vueTheme = {
+  shellBg: "rgba(65, 184, 131, 0.08)",
+  tabBg: "rgba(255, 255, 255, 0.05)",
+  tabColor: "#dbfff1",
+  activeTabBg: "#41b883",
+  activeTabColor: "#081610",
+  activeTabBorderColor: "#41b883",
+  closeHoverColor: "#41b883",
+  dragOverColor: "#41b883",
+} as const;
+
 // ─── Page components ──────────────────────────────────────────────────────────
 
 const push = (path: string) => router.push(path);
@@ -118,129 +129,148 @@ const router = createRouter({
   ],
 });
 
+const demoVueStorageKey = "drm-multitabs";
+
+const initialTabSeed = JSON.stringify([
+  {
+    id: "home",
+    title: "Home",
+    icon: "circle",
+    to: JSON.stringify({ name: "home", params: {}, query: {} }),
+    isMenuItem: false,
+    routeName: "home",
+    caseNumber: null,
+    caseTitle: null,
+  },
+]);
+
 // ─── Shell ────────────────────────────────────────────────────────────────────
 
 const Shell = defineComponent({
   name: "DemoShell",
   render: () => [
-    h(MultiTabs, null, {
-      "tab-icon": () =>
-        h(
-          "svg",
-          {
-            width: 8,
-            height: 8,
-            viewBox: "0 0 8 8",
-            fill: "currentColor",
-            style: "opacity:0.5;flex-shrink:0",
-          },
-          [h("circle", { cx: 4, cy: 4, r: 3 })],
-        ),
-      "launcher-icon": () =>
-        h(
-          "svg",
-          {
-            width: 16,
-            height: 16,
-            viewBox: "0 0 24 24",
-            fill: "none",
-            stroke: "currentColor",
-            "stroke-width": "2",
-            "stroke-linecap": "round",
-            "stroke-linejoin": "round",
-          },
-          [
-            h("rect", { x: 3, y: 3, width: 7, height: 7 }),
-            h("rect", { x: 14, y: 3, width: 7, height: 7 }),
-            h("rect", { x: 3, y: 14, width: 7, height: 7 }),
-            h("rect", { x: 14, y: 14, width: 7, height: 7 }),
-          ],
-        ),
-      "close-icon": () =>
-        h(
-          "svg",
-          {
-            width: 10,
-            height: 10,
-            viewBox: "0 0 24 24",
-            fill: "none",
-            stroke: "currentColor",
-            "stroke-width": "2.5",
-            "stroke-linecap": "round",
-          },
-          [
-            h("line", { x1: 18, y1: 6, x2: 6, y2: 18 }),
-            h("line", { x1: 6, y1: 6, x2: 18, y2: 18 }),
-          ],
-        ),
-      "dropdown-icon": () =>
-        h(
-          "svg",
-          {
-            width: 10,
-            height: 10,
-            viewBox: "0 0 24 24",
-            fill: "none",
-            stroke: "currentColor",
-            "stroke-width": "2.5",
-            "stroke-linecap": "round",
-            "stroke-linejoin": "round",
-          },
-          [h("polyline", { points: "6 9 12 15 18 9" })],
-        ),
-      "menu-icon-reload": () =>
-        h(
-          "svg",
-          {
-            width: 12,
-            height: 12,
-            viewBox: "0 0 24 24",
-            fill: "none",
-            stroke: "currentColor",
-            "stroke-width": "2",
-            "stroke-linecap": "round",
-            "stroke-linejoin": "round",
-          },
-          [
-            h("polyline", { points: "23 4 23 10 17 10" }),
-            h("path", { d: "M20.49 15a9 9 0 1 1-2.12-9.36L23 10" }),
-          ],
-        ),
-      "menu-icon-close": () =>
-        h(
-          "svg",
-          {
-            width: 10,
-            height: 10,
-            viewBox: "0 0 24 24",
-            fill: "none",
-            stroke: "currentColor",
-            "stroke-width": "2.5",
-            "stroke-linecap": "round",
-          },
-          [
-            h("line", { x1: 18, y1: 6, x2: 6, y2: 18 }),
-            h("line", { x1: 6, y1: 6, x2: 18, y2: 18 }),
-          ],
-        ),
-      "menu-icon-close-all": () =>
-        h(
-          "svg",
-          {
-            width: 10,
-            height: 10,
-            viewBox: "0 0 24 24",
-            fill: "none",
-            stroke: "currentColor",
-            "stroke-width": "2.5",
-            "stroke-linecap": "round",
-          },
-          [
-            h("line", { x1: 18, y1: 6, x2: 6, y2: 18 }),
-            h("line", { x1: 6, y1: 6, x2: 18, y2: 18 }),
-          ],
-        ),
-    }),
+    h(
+      MultiTabs,
+      { theme: vueTheme },
+      {
+        "tab-icon": () =>
+          h(
+            "svg",
+            {
+              width: 8,
+              height: 8,
+              viewBox: "0 0 8 8",
+              fill: "currentColor",
+              style: "opacity:0.5;flex-shrink:0",
+            },
+            [h("circle", { cx: 4, cy: 4, r: 3 })],
+          ),
+        "launcher-icon": () =>
+          h(
+            "svg",
+            {
+              width: 16,
+              height: 16,
+              viewBox: "0 0 24 24",
+              fill: "none",
+              stroke: "currentColor",
+              "stroke-width": "2",
+              "stroke-linecap": "round",
+              "stroke-linejoin": "round",
+            },
+            [
+              h("rect", { x: 3, y: 3, width: 7, height: 7 }),
+              h("rect", { x: 14, y: 3, width: 7, height: 7 }),
+              h("rect", { x: 3, y: 14, width: 7, height: 7 }),
+              h("rect", { x: 14, y: 14, width: 7, height: 7 }),
+            ],
+          ),
+        "close-icon": () =>
+          h(
+            "svg",
+            {
+              width: 10,
+              height: 10,
+              viewBox: "0 0 24 24",
+              fill: "none",
+              stroke: "currentColor",
+              "stroke-width": "2.5",
+              "stroke-linecap": "round",
+            },
+            [
+              h("line", { x1: 18, y1: 6, x2: 6, y2: 18 }),
+              h("line", { x1: 6, y1: 6, x2: 18, y2: 18 }),
+            ],
+          ),
+        "dropdown-icon": () =>
+          h(
+            "svg",
+            {
+              width: 10,
+              height: 10,
+              viewBox: "0 0 24 24",
+              fill: "none",
+              stroke: "currentColor",
+              "stroke-width": "2.5",
+              "stroke-linecap": "round",
+              "stroke-linejoin": "round",
+            },
+            [h("polyline", { points: "6 9 12 15 18 9" })],
+          ),
+        "menu-icon-reload": () =>
+          h(
+            "svg",
+            {
+              width: 12,
+              height: 12,
+              viewBox: "0 0 24 24",
+              fill: "none",
+              stroke: "currentColor",
+              "stroke-width": "2",
+              "stroke-linecap": "round",
+              "stroke-linejoin": "round",
+            },
+            [
+              h("polyline", { points: "23 4 23 10 17 10" }),
+              h("path", { d: "M20.49 15a9 9 0 1 1-2.12-9.36L23 10" }),
+            ],
+          ),
+        "menu-icon-close": () =>
+          h(
+            "svg",
+            {
+              width: 10,
+              height: 10,
+              viewBox: "0 0 24 24",
+              fill: "none",
+              stroke: "currentColor",
+              "stroke-width": "2.5",
+              "stroke-linecap": "round",
+            },
+            [
+              h("line", { x1: 18, y1: 6, x2: 6, y2: 18 }),
+              h("line", { x1: 6, y1: 6, x2: 18, y2: 18 }),
+            ],
+          ),
+        "menu-icon-close-all": () =>
+          h(
+            "svg",
+            {
+              width: 10,
+              height: 10,
+              viewBox: "0 0 24 24",
+              fill: "none",
+              stroke: "currentColor",
+              "stroke-width": "2.5",
+              "stroke-linecap": "round",
+            },
+            [
+              h("line", { x1: 18, y1: 6, x2: 6, y2: 18 }),
+              h("line", { x1: 6, y1: 6, x2: 18, y2: 18 }),
+            ],
+          ),
+      },
+    ),
     h(RouterView),
   ],
 });
@@ -252,6 +282,8 @@ let app: ReturnType<typeof createApp> | null = null;
 
 onMounted(async () => {
   if (!mountTarget.value) return;
+  localStorage.removeItem(demoVueStorageKey);
+  localStorage.setItem(demoVueStorageKey, initialTabSeed);
   app = createApp(Shell);
   app.use(router);
   await router.push("/");
@@ -315,8 +347,8 @@ onUnmounted(() => {
 .demo-nav a {
   display: inline-block;
   padding: 0.45rem 1rem;
-  background: linear-gradient(180deg, #5a95c1 0%, #326776 100%);
-  color: #0a1628;
+  background: linear-gradient(180deg, #41b883 0%, #1f8f61 100%);
+  color: #07150e;
   font-weight: 700;
   font-size: 0.85rem;
   border-radius: 14px;
