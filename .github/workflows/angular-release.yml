@@ -1,12 +1,9 @@
 name: Angular Release
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - packages/angular/**
-      - .github/workflows/angular-release.yml
+  # Disabled until @drobinetm/multitabs-angular is ready for its first release.
+  # To re-enable: restore the push trigger below and configure Trusted Publishing
+  # on npmjs.com for this workflow.
   workflow_dispatch:
     inputs:
       dist-tag:
@@ -18,6 +15,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   release-angular:
@@ -39,6 +37,7 @@ jobs:
           node-version: 22
           cache: pnpm
           registry-url: https://registry.npmjs.org
+          provenance: true
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -73,5 +72,3 @@ jobs:
       - name: Release Angular package
         if: steps.angular_changeset.outputs.has_changeset == 'true'
         run: pnpm --filter @drobinetm/multitabs-angular exec npm publish --access public --tag "$NPM_DIST_TAG"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
