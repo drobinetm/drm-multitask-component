@@ -1,108 +1,73 @@
 # @drobinetm/multitabs
 
-`@drobinetm/multitabs` is a monorepo for browser-tab-style navigation components in
-Vue, React, and Angular applications. It is designed for dense application shells such as
-claims systems, CRMs, internal dashboards, and admin tools where users keep
-multiple live records open at once.
+[![Vue](https://img.shields.io/badge/Vue-3-42B883?logo=vue.js&logoColor=white)](https://drm-multitabs-docs.netlify.app/docs/vue/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=111827)](https://drm-multitabs-docs.netlify.app/docs/react/)
+[![Angular](https://img.shields.io/badge/Angular-coming%20soon-DD0031?logo=angular&logoColor=white)](https://drm-multitabs-docs.netlify.app/)
+[![Astro](https://img.shields.io/badge/Docs-Astro-FF5D01?logo=astro&logoColor=white)](https://drm-multitabs-docs.netlify.app/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-ready-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![pnpm](https://img.shields.io/badge/monorepo-pnpm-F69220?logo=pnpm&logoColor=white)](./pnpm-workspace.yaml)
 
-[![Monorepo](https://img.shields.io/badge/monorepo-pnpm-F69220?logo=pnpm&logoColor=white)](./pnpm-workspace.yaml)
-[![Build](https://img.shields.io/badge/build-turborepo-111827?logo=turborepo&logoColor=white)](./turbo.json)
-[![Docs](https://img.shields.io/badge/docs-Astro-FF5D01?logo=astro&logoColor=white)](./apps/docs)
-[![Vue](https://img.shields.io/npm/v/%40drm%2Fmultitabs-vue?logo=vue.js&label=vue)](https://www.npmjs.com/package/@drobinetm/multitabs-vue)
-[![React](https://img.shields.io/npm/v/%40drm%2Fmultitabs-react?logo=react&label=react)](https://www.npmjs.com/package/@drobinetm/multitabs-react)
-[![Angular](https://img.shields.io/npm/v/%40drm%2Fmultitabs-angular?logo=angular&label=angular)](https://www.npmjs.com/package/@drobinetm/multitabs-angular)
+`@drobinetm/multitabs` is a library-component multitabs solution for web
+applications that need browser-style workspace navigation inside a single-page
+application shell. It solves the common problem of keeping multiple routes,
+records, or work contexts open at the same time without forcing users to leave
+the application flow or duplicate browser tabs. The library is designed for
+interfaces such as admin panels, internal tools, CRM screens, operations
+dashboards, and other dense navigation environments where fast switching
+between active views matters. It provides a consistent mental model across
+frameworks while keeping each package implementation native to its ecosystem.
+The current public packages target Vue and React, and the Angular package is in
+progress and will be released soon. The documentation site centralizes usage
+guides, package references, and project support information.
 
-## What this repo contains
+## Why this library
 
-This repository holds the publishable packages, the docs site, and the shared
-tooling needed to build and release the project.
-
-| Path               | Purpose                                        |
-| ------------------ | ---------------------------------------------- |
-| `packages/vue`     | `@drobinetm/multitabs-vue`                     |
-| `packages/react`   | `@drobinetm/multitabs-react`                   |
-| `packages/angular` | `@drobinetm/multitabs-angular`                 |
-| `apps/docs`        | Astro landing page and documentation site      |
-| `configs`          | Shared TypeScript, ESLint, and Prettier config |
-| `.github`          | CI, release automation, and funding metadata   |
-
-## Core capabilities
-
-The packages share the same product intent even though each one follows the
-native conventions of its stack.
-
-- Router-native tab identity and navigation.
-- Browser-style tab bar behavior for SPAs.
-- Drag and drop tab ordering.
-- Close, close all, and reload actions.
-- Local persistence for open tabs.
-- Theme-ready styling with CSS custom properties.
-- Zero UI library dependency.
+This library is built for applications that need persistent, high-density
+navigation patterns beyond standard route switching. It helps keep open work
+contexts visible and recoverable while preserving router-driven application
+structure. Each package stays framework-native instead of introducing a shared
+cross-framework runtime abstraction. The visual layer is design-system-neutral,
+so teams can adapt it through CSS custom properties without depending on a UI
+component framework.
 
 ## Installation
 
-You install the package that matches your stack. All packages can be
-installed with `pnpm`, `npm`, or `yarn`.
+Install the package that matches your target framework.
+
+### Vue
+
+Package for Vue applications.
 
 ```bash
 pnpm add @drobinetm/multitabs-vue
+npm install @drobinetm/multitabs-vue
+yarn add @drobinetm/multitabs-vue
+```
+
+### React
+
+Package for React applications.
+
+```bash
+pnpm add @drobinetm/multitabs-react
 npm install @drobinetm/multitabs-react
-yarn add @drobinetm/multitabs-angular
+yarn add @drobinetm/multitabs-react
 ```
 
-## Development
+### Angular
 
-This repo uses `pnpm` workspaces and Turborepo. Install dependencies once from
-the repository root, then run workspace scripts as needed.
+The `@drobinetm/multitabs-angular` package will be available soon.
 
-```bash
-pnpm install
-pnpm build
-pnpm lint
-pnpm test
-```
+## Project site
 
-For package-specific work, filter the workspace.
+The project site centralizes the public documentation and reference pages.
 
-```bash
-pnpm --filter @drobinetm/multitabs-vue build
-pnpm --filter @drobinetm/multitabs-react dev
-pnpm --filter @drobinetm/multitabs-docs dev
-```
+- Project site: https://drm-multitabs-docs.netlify.app/
+- Vue documentation: https://drm-multitabs-docs.netlify.app/docs/vue/
+- React documentation: https://drm-multitabs-docs.netlify.app/docs/react/
 
-## Documentation
+## Support
 
-The public docs and landing page live in `apps/docs`. The site is built with
-Astro and styled around the blue palette defined for the brand.
+The support page lists the available project support options.
 
-The repository includes a docs-only validation workflow and a separate Netlify
-deployment workflow for production publishes from `main`.
-
-- Landing page: `apps/docs/src/pages/index.astro`
-- Support page: `apps/docs/src/pages/support.astro`
-- Stack-specific docs: `apps/docs/src/pages/docs/*`
-
-## Release policy
-
-Package releases currently use a manual versioning model.
-
-- Bump the target package version manually in that package's `package.json`.
-- Add a Changeset for the package you want to release.
-- Let the package-specific workflow publish to npm.
-- Treat the global `release.yml` workflow as a manual fallback, not the default
-  publication path.
-
-The source of truth for the release version is the package's `package.json`.
-Changesets communicate release intent and release notes, but they do not derive
-the package version automatically in the current workflow model.
-
-## Funding
-
-The project supports multiple funding channels so individuals and teams can use
-the method that fits them best.
-
-- Crypto wallets: see `apps/docs/src/pages/support.astro`
-
-## License
-
-This project is released under the MIT license.
+- Support: https://drm-multitabs-docs.netlify.app/support/
