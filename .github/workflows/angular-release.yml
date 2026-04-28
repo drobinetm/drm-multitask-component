@@ -42,9 +42,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build Angular package
-        run: pnpm --filter @drobinetm/multitabs-angular build
-
       - name: Detect Angular changeset
         id: angular_changeset
         run: |

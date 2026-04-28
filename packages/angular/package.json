@@ -1,6 +1,6 @@
 {
   "name": "@drobinetm/multitabs-angular",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Browser-tab-style navigation component for Angular",
   "keywords": [
     "angular",
@@ -12,7 +12,7 @@
   "homepage": "https://drm-multitabs-docs.netlify.app/docs/angular",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/drobinetm/drm-multitask-component.git",
+    "url": "git+https://github.com/drobinetm/drm-multitabs-component.git",
     "directory": "packages/angular"
   },
   "license": "MIT",
@@ -38,7 +38,8 @@
     "dev": "ng-packagr -p ng-package.json --watch",
     "test": "node -e \"console.log('No Angular tests configured yet')\"",
     "lint": "eslint \"src/**/*.ts\"",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepack": "pnpm run build"
   },
   "peerDependencies": {
     "@angular/common": "^17.0.0 || ^18.0.0",
