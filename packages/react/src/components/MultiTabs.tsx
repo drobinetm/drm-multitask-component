@@ -1,18 +1,21 @@
 import React, {
   createContext,
   useContext,
+  useEffect,
   useState,
   useRef,
   useCallback,
+  useId,
   type ReactNode,
   type CSSProperties,
 } from "react";
 import { createPortal } from "react-dom";
-import { useMultiTabs, type UseMultiTabsReturn } from "@/hooks/useMultiTabs";
+import { useMultiTabs } from "@/hooks/useMultiTabs";
 import type {
   MultiTabItem,
   MultiTabsTheme,
   UseMultiTabsOptions,
+  UseMultiTabsReturn,
 } from "@/types";
 import "@/styles/multitabs.css";
 
@@ -30,6 +33,10 @@ function useMultiTabsContext(): UseMultiTabsReturn {
     );
   }
   return ctx;
+}
+
+export function useMultiTabsController(): UseMultiTabsReturn {
+  return useMultiTabsContext();
 }
 
 // ---------------------------------------------------------------------------
@@ -145,12 +152,30 @@ export function MultiTabs({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const draggingTabIdRef = useRef<string | null>(null);
   const dropdownButtonRef = useRef<HTMLButtonElement | null>(null);
+  const tabButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const tabListId = useId();
 
   const themeVars = buildThemeVars(theme);
+
+  const getTabLabel = useCallback((tab: MultiTabItem) => {
+    const metadata = tab.metadata;
+    const caseNumber =
+      typeof metadata?.caseNumber === "string" ? metadata.caseNumber : null;
+    const caseTitle =
+      typeof metadata?.caseTitle === "string" ? metadata.caseTitle : null;
+
+    return caseNumber && caseTitle ? `[${caseNumber}] ${caseTitle}` : tab.title;
+  }, []);
 
   const closeAllMenus = useCallback(() => {
     setActiveTabMenuId(null);
     setDropdownOpen(false);
+  }, []);
+
+  const focusTabButton = useCallback((tabId: string) => {
+    const button = tabButtonRefs.current[tabId];
+    if (!button) return;
+    button.focus();
   }, []);
 
   // --- Handlers ---
@@ -243,6 +268,74 @@ export function MultiTabs({
     setDragOverTabId(null);
   }, []);
 
+  const handleTabKeyDown = useCallback(
+    (tab: MultiTabItem, event: React.KeyboardEvent<HTMLButtonElement>) => {
+      const currentIndex = tabs.findIndex((item) => item.id === tab.id);
+      if (currentIndex === -1) return;
+
+      const focusAndOpenTab = (target: MultiTabItem) => {
+        openTab(target);
+        requestAnimationFrame(() => {
+          focusTabButton(target.id);
+        });
+      };
+
+      switch (event.key) {
+        case "ArrowRight": {
+          event.preventDefault();
+          const nextTab = tabs[(currentIndex + 1) % tabs.length];
+          if (nextTab) focusAndOpenTab(nextTab);
+          break;
+        }
+        case "ArrowLeft": {
+          event.preventDefault();
+          const previousIndex =
+            currentIndex === 0 ? tabs.length - 1 : currentIndex - 1;
+          const previousTab = tabs[previousIndex];
+          if (previousTab) focusAndOpenTab(previousTab);
+          break;
+        }
+        case "Home": {
+          event.preventDefault();
+          const firstTab = tabs[0];
+          if (firstTab) focusAndOpenTab(firstTab);
+          break;
+        }
+        case "End": {
+          event.preventDefault();
+          const lastTab = tabs[tabs.length - 1];
+          if (lastTab) focusAndOpenTab(lastTab);
+          break;
+        }
+        case "Delete": {
+          if (tabs.length <= 1) return;
+
+          event.preventDefault();
+          const fallbackTab =
+            tabs[currentIndex + 1] ?? tabs[currentIndex - 1] ?? null;
+
+          closeTab(tab);
+
+          if (fallbackTab) {
+            requestAnimationFrame(() => {
+              focusTabButton(fallbackTab.id);
+            });
+          }
+          break;
+        }
+      }
+    },
+    [closeTab, focusTabButton, openTab, tabs],
+  );
+
+  useEffect(() => {
+    for (const tabId of Object.keys(tabButtonRefs.current)) {
+      if (!tabs.some((tab) => tab.id === tabId)) {
+        delete tabButtonRefs.current[tabId];
+      }
+    }
+  }, [tabs]);
+
   const showOverlay = activeTabMenuId !== null || dropdownOpen;
 
   return (
@@ -265,6 +358,7 @@ export function MultiTabs({
           className="drm-multitabs__rail"
           role="tablist"
           aria-label="Open tabs"
+          aria-orientation="horizontal"
         >
           {tabs.map((tab) => (
             <div
@@ -283,41 +377,32 @@ export function MultiTabs({
                   className={`drm-multitabs__tab${tab.id === currentTabId ? " drm-multitabs__tab--active" : ""}`}
                   type="button"
                   role="tab"
+                  id={`${tabListId}-${tab.id}`}
+                  ref={(element) => {
+                    tabButtonRefs.current[tab.id] = element;
+                  }}
                   aria-selected={tab.id === currentTabId}
-                  title={
-                    tab.caseNumber && tab.caseTitle
-                      ? `[${tab.caseNumber}] - ${tab.caseTitle}`
-                      : tab.title
-                  }
+                  tabIndex={tab.id === currentTabId ? 0 : -1}
+                  title={getTabLabel(tab)}
                   onClick={() => handleTabClick(tab)}
+                  onKeyDown={(event) => handleTabKeyDown(tab, event)}
                 >
                   {/* Icon */}
                   {tabIcon ? (
                     tabIcon(tab)
-                  ) : (
+                  ) : tab.icon && tab.icon !== "circle" ? (
                     <span
                       className="drm-multitabs__tab-icon"
                       aria-hidden="true"
                     >
                       {tab.icon}
                     </span>
-                  )}
+                  ) : null}
 
                   {/* Label */}
-                  {tab.caseNumber && tab.caseTitle ? (
-                    <>
-                      <span className="drm-multitabs__tab-case-number">
-                        [{tab.caseNumber}]
-                      </span>
-                      <span className="drm-multitabs__tab-case-title">
-                        {tab.caseTitle}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="drm-multitabs__tab-label">
-                      {tab.title}
-                    </span>
-                  )}
+                  <span className="drm-multitabs__tab-label">
+                    {getTabLabel(tab)}
+                  </span>
                 </button>
 
                 {/* Context menu rendered via portal to avoid overflow:hidden clipping */}
@@ -441,9 +526,7 @@ export function MultiTabs({
                   openTab(tab);
                 }}
               >
-                {tab.caseNumber
-                  ? `[${tab.caseNumber}] ${tab.caseTitle}`
-                  : tab.title}
+                {getTabLabel(tab)}
               </button>
             ))}
             <hr

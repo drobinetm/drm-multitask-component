@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 // Module-level singleton: tabId → nonce
 const tabReloadNonceState: Record<string, number> = {};
@@ -26,9 +26,9 @@ export function bumpTabContainerReload(tabId: string): void {
  * // Use as key to force remount: <Content key={nonce} />
  */
 export function useTabContainerReload(tabId: string): number {
-  const rerenderRef = useRef(0);
+  const [, setTick] = useState(0);
   const forceUpdate = useCallback(() => {
-    rerenderRef.current += 1;
+    setTick((value) => value + 1);
   }, []);
 
   useEffect(() => {

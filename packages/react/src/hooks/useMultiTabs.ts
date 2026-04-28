@@ -1,10 +1,25 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { Location } from "react-router-dom";
-import type { MultiTabItem, UseMultiTabsOptions } from "@/types";
+import type {
+  MultiTabCloseContext,
+  MultiTabItem,
+  UseMultiTabsOptions,
+  UseMultiTabsReturn,
+} from "@/types";
 import { bumpTabContainerReload } from "./useTabContainerReload";
 
-const DEFAULT_OPTIONS: Required<Omit<UseMultiTabsOptions, "resolveTitle">> = {
+const DEFAULT_OPTIONS: Required<
+  Omit<
+    UseMultiTabsOptions,
+    | "resolveTitle"
+    | "resolveTab"
+    | "onBeforeClose"
+    | "onTabOpen"
+    | "onTabClose"
+    | "onTabChange"
+  >
+> = {
   storageKey: "drm-multitabs",
   defaultIcon: "circle",
   maxTabs: Infinity,
@@ -42,8 +57,9 @@ function getSearchParam(search: string, key: string): string | null {
 // ---------------------------------------------------------------------------
 
 function readStoredTabs(storageKey: string): MultiTabItem[] {
+  if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(storageKey);
+    const raw = window.localStorage.getItem(storageKey);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as MultiTabItem[];
     return Array.isArray(parsed) ? parsed : [];
@@ -53,11 +69,36 @@ function readStoredTabs(storageKey: string): MultiTabItem[] {
 }
 
 function writeStoredTabs(storageKey: string, tabs: MultiTabItem[]): void {
+  if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(storageKey, JSON.stringify(tabs));
+    window.localStorage.setItem(storageKey, JSON.stringify(tabs));
   } catch {
     // localStorage may be unavailable
   }
+}
+
+function buildCloseContext(
+  tab: MultiTabItem,
+  reason: MultiTabCloseContext["reason"],
+  tabs: MultiTabItem[],
+  currentTabId: string,
+): MultiTabCloseContext {
+  return {
+    reason,
+    currentTabId,
+    remainingTabs: tabs.filter((item) => item.id !== tab.id),
+  };
+}
+
+function canCloseTab(
+  tab: MultiTabItem,
+  reason: MultiTabCloseContext["reason"],
+  tabs: MultiTabItem[],
+  currentTabId: string,
+  onBeforeClose?: UseMultiTabsOptions["onBeforeClose"],
+): boolean {
+  if (!onBeforeClose) return true;
+  return onBeforeClose(tab, buildCloseContext(tab, reason, tabs, currentTabId));
 }
 
 // ---------------------------------------------------------------------------
@@ -84,10 +125,16 @@ function writeStoredTabs(storageKey: string, tabs: MultiTabItem[]): void {
  *   )
  * }
  */
-export function useMultiTabs(options: UseMultiTabsOptions = {}) {
+export function useMultiTabs(
+  options: UseMultiTabsOptions = {},
+): UseMultiTabsReturn {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   const location = useLocation();
   const navigate = useNavigate();
+  const lastActiveTabIdRef = useRef<string | null>(null);
+  const openedTabRef = useRef<MultiTabItem | null>(null);
+  const closedTabsRef = useRef<MultiTabItem[]>([]);
+  const pendingNavigationRef = useRef<MultiTabItem | null>(null);
 
   const [tabs, setTabs] = useState<MultiTabItem[]>(() =>
     readStoredTabs(opts.storageKey),
@@ -124,18 +171,42 @@ export function useMultiTabs(options: UseMultiTabsOptions = {}) {
       // Preserve previous title if new location lost it
       if (!title && existing?.title) title = existing.title;
 
-      return {
+      const defaultTab: MultiTabItem = {
         id,
         title,
         icon: opts.defaultIcon,
         to: { pathname: loc.pathname, search: loc.search, hash: loc.hash },
-        isMenuItem: false,
         routePath: loc.pathname,
-        caseNumber: getSearchParam(loc.search, "caseNumber"),
-        caseTitle: getSearchParam(loc.search, "caseTitle"),
+        metadata: {
+          searchParams: Object.fromEntries(
+            new URLSearchParams(loc.search).entries(),
+          ),
+        },
       };
+
+      const resolved =
+        opts.resolveTab?.(loc, {
+          existingTab: existing ?? null,
+          defaultTab,
+        }) ?? {};
+
+      const mergedTab = {
+        ...defaultTab,
+        ...resolved,
+        id: resolved.id ?? defaultTab.id,
+        to: resolved.to ?? defaultTab.to,
+        title: resolved.title ?? defaultTab.title,
+        icon: resolved.icon ?? defaultTab.icon,
+        ...(resolved.metadata !== undefined
+          ? { metadata: resolved.metadata }
+          : defaultTab.metadata !== undefined
+            ? { metadata: defaultTab.metadata }
+            : {}),
+      } satisfies MultiTabItem;
+
+      return mergedTab;
     },
-    [opts.resolveTitle, opts.defaultIcon],
+    [opts.resolveTab, opts.resolveTitle, opts.defaultIcon, tabs],
   );
 
   // ---------------------------------------------------------------------------
@@ -155,6 +226,7 @@ export function useMultiTabs(options: UseMultiTabsOptions = {}) {
           const removeIdx = next.findIndex((t) => t.id !== id);
           if (removeIdx !== -1) next.splice(removeIdx, 1);
         }
+        openedTabRef.current = resolved;
         return [...next, resolved];
       }
 
@@ -182,26 +254,52 @@ export function useMultiTabs(options: UseMultiTabsOptions = {}) {
         if (prev.length <= 1) return prev;
         const index = prev.findIndex((t) => t.id === tab.id);
         if (index === -1) return prev;
+        if (
+          !canCloseTab(tab, "close", prev, currentTabId, opts.onBeforeClose)
+        ) {
+          return prev;
+        }
 
         const next = prev.filter((t) => t.id !== tab.id);
 
         if (tab.id === currentTabId) {
           const nextTab = next[index] ?? next[index - 1] ?? next[0];
-          if (nextTab) navigate(nextTab.to);
+          if (nextTab) pendingNavigationRef.current = nextTab;
         }
+
+        closedTabsRef.current = [tab];
 
         return next;
       });
     },
-    [currentTabId, navigate],
+    [currentTabId, opts.onBeforeClose],
   );
 
   const closeAllTabs = useCallback(() => {
     setTabs((prev) => {
       const active = prev.find((t) => t.id === currentTabId);
-      return active ? [active] : prev.slice(0, 1);
+      if (!active) return prev.slice(0, 1);
+
+      const tabsToClose = prev.filter((tab) => tab.id !== active.id);
+      const closableTabs = tabsToClose.filter((tab) =>
+        canCloseTab(tab, "close-all", prev, currentTabId, opts.onBeforeClose),
+      );
+
+      if (closableTabs.length === 0) return prev;
+
+      closedTabsRef.current = closableTabs;
+
+      const blockedIds = new Set(
+        tabsToClose
+          .filter(
+            (tab) => !closableTabs.some((closable) => closable.id === tab.id),
+          )
+          .map((tab) => tab.id),
+      );
+
+      return [active, ...tabsToClose.filter((tab) => blockedIds.has(tab.id))];
     });
-  }, [currentTabId]);
+  }, [currentTabId, opts.onBeforeClose]);
 
   const moveTab = useCallback((sourceId: string, targetId: string) => {
     if (sourceId === targetId) return;
@@ -226,6 +324,38 @@ export function useMultiTabs(options: UseMultiTabsOptions = {}) {
     [currentTabId, navigate],
   );
 
+  useEffect(() => {
+    if (!currentTab || lastActiveTabIdRef.current === currentTab.id) return;
+    lastActiveTabIdRef.current = currentTab.id;
+    opts.onTabChange?.(currentTab);
+  }, [currentTab, opts.onTabChange]);
+
+  useEffect(() => {
+    const openedTab = openedTabRef.current;
+    if (!openedTab) return;
+
+    openedTabRef.current = null;
+    opts.onTabOpen?.(openedTab);
+  }, [tabs, opts.onTabOpen]);
+
+  useEffect(() => {
+    const closedTabs = closedTabsRef.current;
+    if (closedTabs.length === 0) return;
+
+    closedTabsRef.current = [];
+    closedTabs.forEach((tab) => {
+      opts.onTabClose?.(tab);
+    });
+  }, [tabs, opts.onTabClose]);
+
+  useEffect(() => {
+    const nextTab = pendingNavigationRef.current;
+    if (!nextTab) return;
+
+    pendingNavigationRef.current = null;
+    navigate(nextTab.to);
+  }, [tabs, navigate]);
+
   return {
     tabs,
     currentTabId,
@@ -237,5 +367,3 @@ export function useMultiTabs(options: UseMultiTabsOptions = {}) {
     reloadTab,
   };
 }
-
-export type UseMultiTabsReturn = ReturnType<typeof useMultiTabs>;

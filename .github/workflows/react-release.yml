@@ -45,9 +45,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build React package
-        run: pnpm --filter @drobinetm/multitabs-react build
-
       - name: Detect React changeset
         id: react_changeset
         run: |
