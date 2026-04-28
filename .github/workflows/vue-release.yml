@@ -26,6 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NPM_DIST_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.dist-tag || 'latest' }}
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
       - name: Checkout
@@ -44,9 +45,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
-      - name: Build Vue package
-        run: pnpm --filter @drobinetm/multitabs-vue build
 
       - name: Detect Vue changeset
         id: vue_changeset

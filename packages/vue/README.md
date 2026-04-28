@@ -1,8 +1,8 @@
 # @drobinetm/multitabs-vue
 
-`@drobinetm/multitabs-vue` adds browser-tab-style workspace navigation to
-Vue 3 applications. It combines a `MultiTabs` component with composables for
-tab state, router sync, persistence, and reload signals.
+`@drobinetm/multitabs-vue` adds browser-tab-style workspace navigation to Vue 3
+applications. It combines a `MultiTabs` component with composables for tab
+state, router sync, persistence, reload signals, and route-to-tab resolution.
 
 ## Install
 
@@ -29,10 +29,40 @@ import "@drobinetm/multitabs-vue/styles";
 </template>
 ```
 
+## Route mapping
+
+By default, the package builds tabs from the active Vue Router route using
+`route.name`, `route.params`, `route.meta.title`, `route.meta.icon`, and a few
+legacy query fields such as `caseNumber`.
+
+Use `resolveTab` to provide a domain-specific mapping and avoid depending on
+those default conventions.
+
+```vue
+<script setup lang="ts">
+import { MultiTabs, type MultiTabResolver } from "@drobinetm/multitabs-vue";
+
+const resolveTab: MultiTabResolver = (route, { defaultTab }) => {
+  if (route.name === "users-detail") {
+    return {
+      title: `User ${String(route.params.id)}`,
+      icon: "person",
+      caseTitle: defaultTab.title,
+    };
+  }
+};
+</script>
+
+<template>
+  <MultiTabs storage-key="crm-tabs" :resolve-tab="resolveTab" />
+</template>
+```
+
 ## Composables
 
 Use `useMultiTabs()` when you need direct access to the current tab list and
-actions.
+actions. Calls that use the same `storageKey` share the same reactive tab
+store.
 
 ```ts
 import { useMultiTabs } from "@drobinetm/multitabs-vue";
@@ -80,8 +110,11 @@ The package exports the component, composables, and related types.
 - `useTabContainerReload`
 - `bumpTabContainerReload`
 - `generateTabId`
+- `MultiTabResolver`
 - `MultiTabItem`
 - `MultiTabsTheme`
+- `ResolveTabContext`
+- `ResolveTabResult`
 - `UseMultiTabsOptions`
 - `UseMultiTabsReturn`
 

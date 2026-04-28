@@ -1,4 +1,5 @@
-import { ref, computed, watch } from "vue";
+import { computed, effectScope, ref, watch } from "vue";
+import type { Ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import type {
   RouteLocationRaw,
@@ -11,7 +12,15 @@ const DEFAULT_OPTIONS: Required<UseMultiTabsOptions> = {
   storageKey: "drm-multitabs",
   defaultIcon: "circle",
   maxTabs: Infinity,
+  resolveTab: () => undefined,
 };
+
+interface MultiTabsStore {
+  tabs: Ref<MultiTabItem[]>;
+}
+
+const persistenceScope = effectScope(true);
+const stores = new Map<string, MultiTabsStore>();
 
 // ---------------------------------------------------------------------------
 // Tab ID generation
@@ -94,6 +103,30 @@ function writeStoredTabs(storageKey: string, tabs: MultiTabItem[]): void {
   }
 }
 
+function getStore(storageKey: string): MultiTabsStore {
+  const existing = stores.get(storageKey);
+  if (existing) {
+    return existing;
+  }
+
+  const store: MultiTabsStore = {
+    tabs: ref<MultiTabItem[]>(readStoredTabs(storageKey)),
+  };
+
+  persistenceScope.run(() => {
+    watch(
+      store.tabs,
+      (val) => {
+        writeStoredTabs(storageKey, val);
+      },
+      { deep: true },
+    );
+  });
+
+  stores.set(storageKey, store);
+  return store;
+}
+
 // ---------------------------------------------------------------------------
 // useMultiTabs
 // ---------------------------------------------------------------------------
@@ -115,15 +148,19 @@ function writeStoredTabs(storageKey: string, tabs: MultiTabItem[]): void {
  * const { tabs, currentTabId, openTab, closeTab } = inject('multiTabs')
  */
 export function useMultiTabs(options: UseMultiTabsOptions = {}) {
-  const opts = { ...DEFAULT_OPTIONS, ...options };
+  const opts: Required<UseMultiTabsOptions> = {
+    ...DEFAULT_OPTIONS,
+    ...options,
+  };
   const route = useRoute();
   const router = useRouter();
+  const store = getStore(opts.storageKey);
 
   // ---------------------------------------------------------------------------
   // State
   // ---------------------------------------------------------------------------
 
-  const tabs = ref<MultiTabItem[]>(readStoredTabs(opts.storageKey));
+  const tabs = store.tabs;
 
   const currentTabId = computed(() => generateTabId(route));
 
@@ -132,22 +169,12 @@ export function useMultiTabs(options: UseMultiTabsOptions = {}) {
   );
 
   // ---------------------------------------------------------------------------
-  // Persistence
-  // ---------------------------------------------------------------------------
-
-  watch(
-    tabs,
-    (val) => {
-      writeStoredTabs(opts.storageKey, val);
-    },
-    { deep: true },
-  );
-
-  // ---------------------------------------------------------------------------
   // Tab resolution helpers (override these via options for custom behavior)
   // ---------------------------------------------------------------------------
 
-  function resolveTabFromRoute(r: RouteLocationNormalizedLoaded): MultiTabItem {
+  function buildDefaultTabFromRoute(
+    r: RouteLocationNormalizedLoaded,
+  ): MultiTabItem {
     const id = generateTabId(r);
     const existing = tabs.value.find((t) => t.id === id);
 
@@ -181,6 +208,25 @@ export function useMultiTabs(options: UseMultiTabsOptions = {}) {
       routeName: r.name ? String(r.name) : null,
       caseNumber: r.query["caseNumber"] ? String(r.query["caseNumber"]) : null,
       caseTitle: r.query["caseTitle"] ? String(r.query["caseTitle"]) : null,
+    };
+  }
+
+  function resolveTabFromRoute(r: RouteLocationNormalizedLoaded): MultiTabItem {
+    const defaultTab = buildDefaultTabFromRoute(r);
+    const resolved =
+      opts.resolveTab(r, {
+        existingTab: tabs.value.find((t) => t.id === defaultTab.id) ?? null,
+        defaultTab,
+      }) ?? {};
+
+    return {
+      ...defaultTab,
+      ...resolved,
+      id: resolved.id ?? defaultTab.id,
+      to: resolved.to ?? defaultTab.to,
+      title: resolved.title ?? defaultTab.title,
+      icon: resolved.icon ?? defaultTab.icon,
+      isMenuItem: resolved.isMenuItem ?? defaultTab.isMenuItem,
     };
   }
 

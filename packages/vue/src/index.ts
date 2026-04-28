@@ -6,8 +6,11 @@ export {
   bumpTabContainerReload,
 } from "./composables/useTabContainerReload";
 export type {
+  MultiTabResolver,
   MultiTabItem,
   MultiTabsTheme,
+  ResolveTabContext,
+  ResolveTabResult,
   UseMultiTabsOptions,
 } from "./types";
 export type { UseMultiTabsReturn } from "./composables/useMultiTabs";
