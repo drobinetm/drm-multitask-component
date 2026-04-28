@@ -1,0 +1,260 @@
+---
+import DemoVue from "./DemoVue.vue";
+import { formatSandboxCode } from "../utils/formatSandboxCode";
+
+const sandboxes = [
+  {
+    id: "overflow",
+    eyebrow: "Overflow",
+    title: "Many open tabs",
+    description:
+      "Use this isolated shell to test horizontal overflow, dropdown behavior, and drag targets with several open routes.",
+    code: `<MultiTabs\n+  storage-key="drm-docs-vue-overflow"\n+  :theme="vueTheme"\n+/>`.replaceAll("\n+", "\n"),
+  },
+  {
+    id: "limit",
+    eyebrow: "Limit",
+    title: "Maximum tab cap",
+    description:
+      "Opens routes inside a workspace capped at three tabs so teams can validate removal behavior before shipping.",
+    code: `<MultiTabs\n+  storage-key="drm-docs-vue-limit"\n+  :max-tabs="3"\n+  :theme="vueTheme"\n+/>`.replaceAll("\n+", "\n"),
+  },
+  {
+    id: "labels",
+    eyebrow: "Labels",
+    title: "Very long titles",
+    description:
+      "Focuses on truncation, hover titles, and dropdown readability for routed records with long human labels.",
+    code: `<MultiTabs\n+  storage-key="drm-docs-vue-labels"\n+  :resolve-tab="resolveLongLabelTab"\n+  :theme="vueTheme"\n+/>`.replaceAll("\n+", "\n"),
+  },
+  {
+    id: "resolver",
+    eyebrow: "Resolver",
+    title: "Dynamic route mapping",
+    description:
+      "Demonstrates resolveTab() with route params mapped to richer workspace labels.",
+    code: `const resolveTab = (route) => ({\n+  title: \`Order ${"${route.path.split('/').pop()}"} workspace\`,\n+  icon: "receipt",\n+})\n+\n+<MultiTabs\n+  storage-key="drm-docs-vue-resolver"\n+  :resolve-tab="resolveTab"\n+  :theme="vueTheme"\n+/>`.replaceAll("\n+", "\n"),
+  },
+  {
+    id: "slots",
+    eyebrow: "Slots",
+    title: "Custom icons and theme",
+    description:
+      "Shows the visual slots and component-scoped theme tokens without affecting the standard Vue demo.",
+    code: `<MultiTabs\n+  storage-key="drm-docs-vue-slots"\n+  :theme="customTheme"\n+>\n+  <template #launcher-icon><span>AP</span></template>\n+  <template #tab-icon><span>T</span></template>\n+  <template #close-icon><span>X</span></template>\n+</MultiTabs>`.replaceAll("\n+", "\n"),
+  },
+] as const;
+---
+
+<div class="vue-sandbox-stack">
+  {sandboxes.map((sandbox) => (
+    <section class="vue-sandbox-card">
+      <div class="vue-sandbox-card__preview">
+        <header class="vue-sandbox-card__header">
+          <div class="vue-sandbox-card__eyebrow">{sandbox.eyebrow}</div>
+          <h2>{sandbox.title}</h2>
+          <p>{sandbox.description}</p>
+        </header>
+
+        <div class="vue-sandbox-instance">
+          <DemoVue scenario={sandbox.id} client:only="vue" />
+        </div>
+      </div>
+
+      <div class="vue-sandbox-card__code">
+        <div class="vue-sandbox-card__code-header">
+          <span>Example code</span>
+          <button
+            type="button"
+            class="code-copy-button vue-sandbox-copy-button"
+            data-sandbox-copy={sandbox.code}
+            data-tooltip=""
+            aria-label="Copy code"
+          >
+            Copy
+          </button>
+        </div>
+        <pre class="vue-sandbox-pre"
+          ><code set:html={formatSandboxCode(sandbox.code)} /></pre
+        >
+      </div>
+    </section>
+  ))}
+</div>
+
+<style>
+  .vue-sandbox-stack {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .vue-sandbox-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.9fr);
+    gap: 1rem;
+    align-items: stretch;
+    background: linear-gradient(180deg, rgba(10, 18, 34, 0.78), rgba(6, 12, 24, 0.96));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 1rem;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.24);
+  }
+
+  .vue-sandbox-card__preview,
+  .vue-sandbox-card__code {
+    min-width: 0;
+  }
+
+  .vue-sandbox-card__header {
+    margin-bottom: 0.9rem;
+  }
+
+  .vue-sandbox-card__eyebrow {
+    color: #41b883;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-weight: 700;
+    margin-bottom: 0.55rem;
+  }
+
+  .vue-sandbox-card__header h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    color: #f8fafc;
+  }
+
+  .vue-sandbox-card__header p {
+    margin: 0.45rem 0 0;
+    color: #94a3b8;
+    line-height: 1.55;
+  }
+
+  .vue-sandbox-instance {
+    width: 100%;
+    min-height: 340px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #0a1628;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .vue-sandbox-card__code {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border-radius: 14px;
+    background: rgba(7, 14, 28, 0.82);
+    border: 1px solid rgba(96, 160, 255, 0.16);
+    overflow: hidden;
+  }
+
+  .vue-sandbox-card__code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 3rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: #dbeafe;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .vue-sandbox-copy-button {
+    position: static;
+    min-width: auto;
+    height: 2rem;
+    padding: 0 0.8rem;
+  }
+
+  .vue-sandbox-pre {
+    position: relative;
+    margin: 0;
+    flex: 1;
+    overflow: auto;
+    padding: 1rem;
+    background: transparent;
+  }
+
+  .vue-sandbox-pre code {
+    display: block;
+    width: max-content;
+    min-width: 100%;
+    white-space: pre;
+    font-size: 0.84rem;
+    line-height: 1.7;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  }
+
+  .vue-sandbox-pre :global(.sandbox-code__tag) {
+    color: #7dd3fc;
+  }
+
+  .vue-sandbox-pre :global(.sandbox-code__attr) {
+    color: #6ee7b7;
+  }
+
+  .vue-sandbox-pre :global(.sandbox-code__string) {
+    color: #86efac;
+  }
+
+  .vue-sandbox-pre :global(.sandbox-code__keyword) {
+    color: #c084fc;
+    font-weight: 700;
+  }
+
+  .vue-sandbox-pre :global(.sandbox-code__punct) {
+    color: #cbd5e1;
+  }
+
+  @media (max-width: 1080px) {
+    .vue-sandbox-card {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  const setupVueSandboxCopyButtons = () => {
+    document
+      .querySelectorAll<HTMLButtonElement>("[data-sandbox-copy]")
+      .forEach((button) => {
+        if (button.dataset.copyBound === "true") return;
+        button.dataset.copyBound = "true";
+
+        button.addEventListener("click", async () => {
+          const text = button.dataset.sandboxCopy ?? "";
+
+          try {
+            await navigator.clipboard.writeText(text);
+            button.dataset.copied = "true";
+            button.dataset.tooltip = "Copied";
+            button.textContent = "Copied";
+            window.setTimeout(() => {
+              button.dataset.copied = "false";
+              button.dataset.tooltip = "";
+              button.textContent = "Copy";
+            }, 1600);
+          } catch {
+            button.dataset.tooltip = "Copy failed";
+            window.setTimeout(() => {
+              button.dataset.tooltip = "";
+            }, 1600);
+          }
+        });
+      });
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupVueSandboxCopyButtons, {
+      once: true,
+    });
+  } else {
+    setupVueSandboxCopyButtons();
+  }
+
+  document.addEventListener("astro:page-load", setupVueSandboxCopyButtons);
+</script>

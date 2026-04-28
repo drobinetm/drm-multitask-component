@@ -25,6 +25,11 @@ const links = [
   { href: '/docs/react', label: 'React' },
   { href: '/docs/angular', label: 'Angular' },
 ]
+
+const isActiveLink = (href: string) => currentPath === normalizePath(href)
+
+const linkStyle = (href: string, activeAccent = 'rgba(115,190,255,0.22)') =>
+  `padding: 0.9rem 1rem; border-radius: 16px; color:${isActiveLink(href) ? '#f7f9ff' : 'rgba(232,239,255,0.74)'}; background:${isActiveLink(href) ? 'linear-gradient(180deg, rgba(16,28,48,0.9), rgba(9,17,31,0.98))' : 'rgba(255,255,255,0.03)'}; border:1px solid ${isActiveLink(href) ? activeAccent : 'rgba(255,255,255,0.06)'}; box-shadow:${isActiveLink(href) ? '0 12px 28px rgba(0,0,0,0.24)' : 'none'};`
 ---
 
 <BaseLayout title={title} description={description}>
@@ -36,7 +41,7 @@ const links = [
           {links.map((link) => (
             <a
               href={link.href}
-              style={`padding: 0.9rem 1rem; border-radius: 16px; color:${currentPath === normalizePath(link.href) ? '#f7f9ff' : 'rgba(232,239,255,0.74)'}; background:${currentPath === normalizePath(link.href) ? 'linear-gradient(180deg, rgba(16,28,48,0.9), rgba(9,17,31,0.98))' : 'rgba(255,255,255,0.03)'}; border:1px solid ${currentPath === normalizePath(link.href) ? 'rgba(115,190,255,0.22)' : 'rgba(255,255,255,0.06)'}; box-shadow:${currentPath === normalizePath(link.href) ? '0 12px 28px rgba(0,0,0,0.24)' : 'none'};`}>
+              style={linkStyle(link.href)}>
               {link.label}
             </a>
           ))}

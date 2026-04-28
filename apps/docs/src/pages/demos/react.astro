@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DemoReact from "../../components/DemoReact.tsx";
+import ReactEdgeCaseSandboxes from "../../components/ReactEdgeCaseSandboxes.tsx";
 ---
 
 <BaseLayout
@@ -28,6 +29,23 @@ import DemoReact from "../../components/DemoReact.tsx";
 
       <div class="demo-frame glass" data-aos="fade-up" data-aos-delay="80" data-aos-once="true">
         <DemoReact client:only="react" />
+      </div>
+
+      <div class="demo-header" data-aos="fade-up" data-aos-delay="120" data-aos-once="true" style="margin-top: 2.6rem;">
+        <div class="eyebrow">React review lab</div>
+        <h2 class="h2" style="margin: 0;">Edge-case sandboxes</h2>
+        <div class="demo-copy-card glass" style="max-width: 760px; margin-top: 0.85rem;">
+          <p class="demo-desc">
+            Focused states for overflow, tab limits, long titles,
+            <code>resolveTab()</code>, and custom slots. Each sandbox runs
+            independently with <code>MemoryRouter</code> and its own storage
+            key.
+          </p>
+        </div>
+      </div>
+
+      <div class="demo-frame glass demo-frame--labs" data-aos="fade-up" data-aos-delay="160" data-aos-once="true">
+        <ReactEdgeCaseSandboxes client:only="react" />
       </div>
 
     </div>
@@ -69,6 +87,17 @@ import DemoReact from "../../components/DemoReact.tsx";
        position:fixed portals (context menu) below page content */
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+  }
+
+  .demo-frame--labs {
+    padding: 1.1rem;
+    border-radius: 18px;
+  }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.06);
+    color: #dbeafe;
+    border: 1px solid rgba(255,255,255,0.12);
   }
 
   :global(.demo-shell-wrapper .drm-multitabs) {

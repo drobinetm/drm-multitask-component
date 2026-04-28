@@ -1,0 +1,34 @@
+---
+import DemoVue from "../../../components/DemoVue.vue";
+
+type ScenarioId = "overflow" | "limit" | "labels" | "resolver" | "slots";
+
+export function getStaticPaths() {
+  return [
+    { params: { scenario: "overflow" } },
+    { params: { scenario: "limit" } },
+    { params: { scenario: "labels" } },
+    { params: { scenario: "resolver" } },
+    { params: { scenario: "slots" } },
+  ];
+}
+
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue sandbox | @drobinetm/multitabs</title>
+    <style>
+      html, body {
+        margin: 0;
+        background: #0a1628;
+      }
+    </style>
+  </head>
+  <body>
+    <DemoVue client:only="vue" scenario={Astro.params.scenario as ScenarioId | undefined} />
+  </body>
+</html>

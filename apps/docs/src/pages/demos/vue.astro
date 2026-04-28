@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DemoVue from "../../components/DemoVue.vue";
+import VueEdgeCaseSandboxes from "../../components/VueEdgeCaseSandboxes.astro";
 ---
 
 <BaseLayout
@@ -28,6 +29,22 @@ import DemoVue from "../../components/DemoVue.vue";
 
       <div class="demo-frame glass" data-aos="fade-up" data-aos-delay="80" data-aos-once="true">
         <DemoVue client:only="vue" />
+      </div>
+
+      <div class="demo-header" data-aos="fade-up" data-aos-delay="120" data-aos-once="true" style="margin-top: 2.6rem;">
+        <div class="eyebrow">Vue review lab</div>
+        <h2 class="h2" style="margin: 0;">Edge-case sandboxes</h2>
+        <div class="demo-copy-card glass" style="max-width: 760px; margin-top: 0.85rem;">
+          <p class="demo-desc">
+            Focused states for overflow, tab limits, long titles,
+            <code>resolveTab()</code>, and custom slots. Each sandbox runs in
+            its own isolated preview.
+          </p>
+        </div>
+      </div>
+
+      <div class="demo-frame glass demo-frame--labs" data-aos="fade-up" data-aos-delay="160" data-aos-once="true">
+        <VueEdgeCaseSandboxes />
       </div>
 
     </div>
@@ -69,6 +86,17 @@ import DemoVue from "../../components/DemoVue.vue";
        position:fixed portals (context menu) below page content */
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
+  }
+
+  .demo-frame--labs {
+    padding: 1.1rem;
+    border-radius: 18px;
+  }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.06);
+    color: #dbeafe;
+    border: 1px solid rgba(255,255,255,0.12);
   }
 
   :global(.demo-shell-outer .drm-multitabs) {
