@@ -19,9 +19,9 @@ tooling needed to build and release the project.
 
 | Path               | Purpose                                        |
 | ------------------ | ---------------------------------------------- |
-| `packages/vue`     | `@drobinetm/multitabs-vue`                           |
-| `packages/react`   | `@drobinetm/multitabs-react`                         |
-| `packages/angular` | `@drobinetm/multitabs-angular`                       |
+| `packages/vue`     | `@drobinetm/multitabs-vue`                     |
+| `packages/react`   | `@drobinetm/multitabs-react`                   |
+| `packages/angular` | `@drobinetm/multitabs-angular`                 |
 | `apps/docs`        | Astro landing page and documentation site      |
 | `configs`          | Shared TypeScript, ESLint, and Prettier config |
 | `.github`          | CI, release automation, and funding metadata   |

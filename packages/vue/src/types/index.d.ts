@@ -3,64 +3,64 @@ import type { RouteLocationRaw } from "vue-router";
  * Represents a single open tab in the MultiTabs component.
  */
 export interface MultiTabItem {
-    /** Unique stable ID derived from route name + params */
-    id: string;
-    /** Display title shown in the tab */
-    title: string;
-    /** Icon identifier string (e.g. 'home', 'user') — used as CSS class or passed to icon component */
-    icon: string;
-    /** Vue Router navigation target */
-    to: RouteLocationRaw;
-    /** Whether the tab matches a known navigation menu item */
-    isMenuItem: boolean;
-    /** Route name if available */
-    routeName?: string | null;
-    /** For special case tabs: the case number */
-    caseNumber?: string | null;
-    /** For special case tabs: the case title */
-    caseTitle?: string | null;
+  /** Unique stable ID derived from route name + params */
+  id: string;
+  /** Display title shown in the tab */
+  title: string;
+  /** Icon identifier string (e.g. 'home', 'user') — used as CSS class or passed to icon component */
+  icon: string;
+  /** Vue Router navigation target */
+  to: RouteLocationRaw;
+  /** Whether the tab matches a known navigation menu item */
+  isMenuItem: boolean;
+  /** Route name if available */
+  routeName?: string | null;
+  /** For special case tabs: the case number */
+  caseNumber?: string | null;
+  /** For special case tabs: the case title */
+  caseTitle?: string | null;
 }
 /**
  * Theme configuration for the MultiTabs component.
  * All values map to CSS custom properties.
  */
 export interface MultiTabsTheme {
-    /** Height of the tab bar. Default: '40px' */
-    height?: string;
-    /** Background of the tab bar shell. Default: 'transparent' */
-    shellBg?: string;
-    /** Background of an inactive tab. Default: 'transparent' */
-    tabBg?: string;
-    /** Text color of an inactive tab. Default: 'inherit' */
-    tabColor?: string;
-    /** Background of the active tab. Default: '#1976d2' */
-    activeTabBg?: string;
-    /** Text color of the active tab. Default: '#ffffff' */
-    activeTabColor?: string;
-    /** Top border color of the active tab. Default: '#1976d2' */
-    activeTabBorderColor?: string;
-    /** Border radius of tabs. Default: '8px' */
-    borderRadius?: string;
-    /** Font size of tab labels. Default: '0.875rem' */
-    fontSize?: string;
-    /** Max width of a single tab. Default: '200px' */
-    tabMaxWidth?: string;
-    /** Min width of a single tab. Default: '80px' */
-    tabMinWidth?: string;
-    /** Close button color on hover. Default: '#f44336' */
-    closeHoverColor?: string;
-    /** Drag-over highlight color. Default: '#1976d2' */
-    dragOverColor?: string;
+  /** Height of the tab bar. Default: '40px' */
+  height?: string;
+  /** Background of the tab bar shell. Default: 'transparent' */
+  shellBg?: string;
+  /** Background of an inactive tab. Default: 'transparent' */
+  tabBg?: string;
+  /** Text color of an inactive tab. Default: 'inherit' */
+  tabColor?: string;
+  /** Background of the active tab. Default: '#1976d2' */
+  activeTabBg?: string;
+  /** Text color of the active tab. Default: '#ffffff' */
+  activeTabColor?: string;
+  /** Top border color of the active tab. Default: '#1976d2' */
+  activeTabBorderColor?: string;
+  /** Border radius of tabs. Default: '8px' */
+  borderRadius?: string;
+  /** Font size of tab labels. Default: '0.875rem' */
+  fontSize?: string;
+  /** Max width of a single tab. Default: '200px' */
+  tabMaxWidth?: string;
+  /** Min width of a single tab. Default: '80px' */
+  tabMinWidth?: string;
+  /** Close button color on hover. Default: '#f44336' */
+  closeHoverColor?: string;
+  /** Drag-over highlight color. Default: '#1976d2' */
+  dragOverColor?: string;
 }
 /**
  * Options for configuring the useMultiTabs composable.
  */
 export interface UseMultiTabsOptions {
-    /** localStorage key for persisting tabs. Default: 'drm-multitabs' */
-    storageKey?: string;
-    /** Default icon for tabs without a resolved icon. Default: 'circle' */
-    defaultIcon?: string;
-    /** Maximum number of tabs allowed. Default: unlimited */
-    maxTabs?: number;
+  /** localStorage key for persisting tabs. Default: 'drm-multitabs' */
+  storageKey?: string;
+  /** Default icon for tabs without a resolved icon. Default: 'circle' */
+  defaultIcon?: string;
+  /** Maximum number of tabs allowed. Default: unlimited */
+  maxTabs?: number;
 }
 //# sourceMappingURL=index.d.ts.map

@@ -10,10 +10,38 @@ const sponsorOptions = [
 ]
 
 const wallets = [
-  { symbol: 'BTC', network: 'Bitcoin', address: 'bc1q-your-wallet-here' },
-  { symbol: 'ETH', network: 'Ethereum', address: '0xYourWalletHere' },
-  { symbol: 'USDT', network: 'BEP20', address: 'Add-your-USDT-wallet-here' },
-  { symbol: 'SOL', network: 'Solana', address: 'AddYourSolanaWalletHere' },
+  {
+    symbol: 'BTC',
+    network: 'Bitcoin',
+    address: '1J5A4JiTsa45EB6DpRL4VjEFhGKSCeQD4P',
+    tint: 'rgba(245, 189, 95, 0.12)',
+    border: 'rgba(245, 189, 95, 0.26)',
+    accent: 'rgba(245, 212, 143, 0.94)',
+  },
+  {
+    symbol: 'ETH',
+    network: 'Ethereum',
+    address: '0xE9AA12dB3f4189f91f0D6d52cBBC64eb5cCBdFA9',
+    tint: 'rgba(129, 190, 255, 0.12)',
+    border: 'rgba(129, 190, 255, 0.24)',
+    accent: 'rgba(180, 219, 255, 0.94)',
+  },
+  {
+    symbol: 'USDT',
+    network: 'BEP20',
+    address: '0xE9AA12dB3f4189f91f0D6d52cBBC64eb5cCBdFA9',
+    tint: 'rgba(48, 209, 136, 0.12)',
+    border: 'rgba(48, 209, 136, 0.24)',
+    accent: 'rgba(154, 239, 199, 0.94)',
+  },
+  {
+    symbol: 'SOL',
+    network: 'Solana',
+    address: '9b2dLvrsN7MPkzmAC4ifk1irR6um2QxwXccnJpz7WV1X',
+    tint: 'rgba(188, 119, 255, 0.12)',
+    border: 'rgba(188, 119, 255, 0.24)',
+    accent: 'rgba(221, 192, 255, 0.94)',
+  },
 ]
 ---
 
@@ -45,20 +73,210 @@ const wallets = [
 
         <div class="glass card" data-aos="fade-up" data-aos-delay="120" data-aos-once="true" style="padding:1.4rem; border-radius:28px; background:linear-gradient(180deg, rgba(10,18,34,0.76), rgba(6,12,24,0.92));">
           <div class="eyebrow">Crypto wallets</div>
-          <p class="panel-copy" style="margin-top:0;">Use direct wallets if your team prefers on-chain support. Replace the placeholders below before publishing the site.</p>
+          <p class="panel-copy" style="margin-top:0;">If this project delivers value to your team and you would like to support its continued development, thank you for considering a direct on-chain contribution. Your support helps sustain ongoing improvements for the developers and organizations that rely on this work. Use the wallet that matches the network shown on each card, and before sending funds, verify both the network label and wallet address carefully so you can copy the correct destination with confidence and avoid transfers on the wrong chain.</p>
           <div style="display:grid; gap:0.8rem; margin-top:1rem;">
             {wallets.map((wallet) => (
-              <div class="glass card wallet-card" style="padding:1rem; border-radius:18px; background:linear-gradient(180deg, rgba(16,28,48,0.78), rgba(9,17,31,0.92)); border:1px solid rgba(255,255,255,0.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);">
+              <div class="glass card wallet-card wallet-card--support" style={`padding:1rem; border-radius:18px; background:linear-gradient(180deg, rgba(16,28,48,0.78), rgba(9,17,31,0.92)); border:1px solid rgba(255,255,255,0.08); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02); --wallet-tint:${wallet.tint}; --wallet-border:${wallet.border}; --wallet-accent:${wallet.accent};`}>
+                <div class="wallet-card__overlay" aria-hidden="true"></div>
                 <div style="display:flex; justify-content:space-between; gap:1rem; align-items:center; margin-bottom:0.4rem; flex-wrap:wrap;">
-                  <strong style="font-size:1.1rem;">{wallet.symbol}</strong>
-                  <span style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.16em; color:rgba(129,190,255,0.82);">{wallet.network}</span>
+                  <strong style="font-size:1.1rem; position:relative; z-index:1;">{wallet.symbol}</strong>
+                  <span style="font-size:0.78rem; text-transform:uppercase; letter-spacing:0.16em; color:var(--wallet-accent); position:relative; z-index:1;">{wallet.network}</span>
                 </div>
-                <code style="display:block; overflow:auto; white-space:nowrap; background:rgba(255,255,255,0.05); padding:0.7rem 0.8rem; border-radius:12px; color:#eef5ff;">{wallet.address}</code>
+                <div class="wallet-address-field">
+                  <div class="wallet-address-field__overlay" aria-hidden="true"></div>
+                  <code>{wallet.address}</code>
+                  <button type="button" class="wallet-copy-button" data-wallet-copy={wallet.address} aria-label={`Copy ${wallet.symbol} wallet address`}>Copy</button>
+                </div>
               </div>
             ))}
+          </div>
+          <div class="wallet-warning-callout" role="note" aria-label="Wallet network notice">
+            <strong>Verify the network before sending.</strong>
+            <p>For your security, only send funds through the exact network shown on each card. The USDT wallet above is intended for <span>BEP20</span> transfers on BNB Smart Chain.</p>
           </div>
         </div>
       </div>
     </div>
   </section>
+
+  <style>
+    .wallet-card--support {
+      position: relative;
+      isolation: isolate;
+    }
+
+    .wallet-card__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--wallet-tint), transparent 58%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wallet-address-field {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.3rem;
+      border-radius: 12px;
+      border: 1px solid var(--wallet-border);
+      background: rgba(255, 255, 255, 0.04);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      overflow: hidden;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .wallet-address-field__overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--wallet-tint), rgba(255, 255, 255, 0.02));
+      pointer-events: none;
+    }
+
+    .wallet-address-field code {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      min-width: 0;
+      padding: 0.4rem 0.5rem;
+      background: transparent !important;
+      color: #eef5ff;
+      font-size: 0.84rem;
+      line-height: 1.35;
+      letter-spacing: 0.015em;
+      overflow: auto;
+      white-space: nowrap;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .wallet-copy-button {
+      position: relative;
+      z-index: 1;
+      flex: 0 0 auto;
+      align-self: stretch;
+      min-width: 4.5rem;
+      padding: 0 0.95rem;
+      border: 0;
+      border-left: 1px solid var(--wallet-border);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(12, 22, 40, 0.72), rgba(8, 16, 31, 0.56));
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+      color: var(--wallet-accent);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 140ms ease, color 140ms ease, transform 140ms ease;
+    }
+
+    .wallet-copy-button:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .wallet-copy-button:active {
+      transform: scale(0.98);
+    }
+
+    .wallet-copy-button[data-copied='true'] {
+      color: #62d393;
+    }
+
+    .wallet-warning-callout {
+      position: relative;
+      margin-top: 1rem;
+      padding: 0.95rem 1rem 0.95rem 1.15rem;
+      border-radius: 16px;
+      border: 1px solid rgba(129, 190, 255, 0.18);
+      background: linear-gradient(180deg, rgba(24, 43, 72, 0.55), rgba(11, 20, 36, 0.72));
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+    }
+
+    .wallet-warning-callout::before {
+      content: '';
+      position: absolute;
+      left: 0.7rem;
+      top: 0.9rem;
+      bottom: 0.9rem;
+      width: 2px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(129, 190, 255, 0.9), rgba(89, 213, 255, 0.32));
+    }
+
+    .wallet-warning-callout strong {
+      display: block;
+      margin-bottom: 0.35rem;
+      color: #eef5ff;
+      font-size: 0.95rem;
+      letter-spacing: 0.01em;
+    }
+
+    .wallet-warning-callout p {
+      margin: 0;
+      color: var(--text-soft);
+      font-size: 0.93rem;
+      line-height: 1.65;
+    }
+
+    .wallet-warning-callout span {
+      color: #eef5ff;
+      font-weight: 700;
+    }
+
+    @media (max-width: 640px) {
+      .wallet-address-field {
+        align-items: stretch;
+      }
+
+      .wallet-copy-button {
+        min-width: 4rem;
+        padding: 0 0.8rem;
+      }
+    }
+  </style>
+
+  <script>
+    const setupWalletCopyButtons = () => {
+      document.querySelectorAll<HTMLButtonElement>('.wallet-copy-button').forEach((button) => {
+        if (button.dataset.bound === 'true') return;
+
+        button.dataset.bound = 'true';
+
+        button.addEventListener('click', async () => {
+          const text = button.dataset.walletCopy ?? '';
+
+          try {
+            await navigator.clipboard.writeText(text);
+            button.dataset.copied = 'true';
+            button.textContent = 'Copied';
+
+            window.setTimeout(() => {
+              button.dataset.copied = 'false';
+              button.textContent = 'Copy';
+            }, 1600);
+          } catch {
+            button.textContent = 'Failed';
+
+            window.setTimeout(() => {
+              button.textContent = 'Copy';
+            }, 1600);
+          }
+        });
+      });
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupWalletCopyButtons, { once: true });
+    } else {
+      setupWalletCopyButtons();
+    }
+
+    document.addEventListener('astro:page-load', setupWalletCopyButtons);
+  </script>
 </BaseLayout>

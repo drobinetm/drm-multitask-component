@@ -13,6 +13,6 @@ export declare function bumpTabContainerReload(tabId: string): void;
  * // Use as :key to force remount, or watch() to re-fetch data
  */
 export declare function useTabContainerReload(): {
-    getReloadNonce: (tabId: string) => number;
+  getReloadNonce: (tabId: string) => number;
 };
 //# sourceMappingURL=useTabContainerReload.d.ts.map

@@ -13,8 +13,8 @@ navigation, persistence, drag and drop, close actions, and reload hooks.
 
 Pick the package that matches your stack.
 
-| Framework | Package                  |
-| --------- | ------------------------ |
+| Framework | Package                        |
+| --------- | ------------------------------ |
 | Vue 3     | `@drobinetm/multitabs-vue`     |
 | React     | `@drobinetm/multitabs-react`   |
 | Angular   | `@drobinetm/multitabs-angular` |
