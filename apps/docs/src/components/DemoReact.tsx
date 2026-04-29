@@ -164,7 +164,7 @@ function IconSettings() {
 }
 
 const demoRoutes: DemoRoute[] = [
-  { path: "/", label: "Welcome", title: "Home", icon: "home" },
+  { path: "/", label: "Home", title: "Home", icon: "home" },
   { path: "/about", label: "About", title: "About", icon: "info" },
   { path: "/reports", label: "Reports", title: "Reports", icon: "report" },
   { path: "/settings", label: "Settings", title: "Settings", icon: "settings" },
@@ -204,7 +204,7 @@ function HomePage() {
 
   return (
     <div className="demo-page">
-      <h2>Welcome</h2>
+      <h2>Home</h2>
       <p>Navigate using the links below to open new tabs.</p>
       <nav className="demo-nav">
         {demoRoutes
