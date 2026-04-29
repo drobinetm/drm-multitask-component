@@ -16,6 +16,7 @@
       <TransitionGroup
         tag="div"
         name="drm-multitabs-tab"
+        :css="tabTransitionsEnabled"
         class="drm-multitabs__rail"
         role="tablist"
         aria-label="Open tabs"
@@ -146,7 +147,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, shallowRef } from "vue";
+import { computed, nextTick, shallowRef, watch } from "vue";
 import type { ComponentPublicInstance } from "vue";
 import MultiTabsContextMenu from "./MultiTabsContextMenu.vue";
 import MultiTabsDropdownMenu from "./MultiTabsDropdownMenu.vue";
@@ -245,11 +246,44 @@ const dropdownMenu = shallowRef<InstanceType<
   typeof MultiTabsDropdownMenu
 > | null>(null);
 const tabButtonRefs = new Map<string, HTMLButtonElement>();
+const tabTransitionsEnabled = shallowRef(true);
 
 const contextMenuRef = computed(() => contextMenu.value?.menuRef ?? null);
 const dropdownMenuRef = computed(() => dropdownMenu.value?.menuRef ?? null);
 const activeContextTab = computed(
   () => tabs.value.find((tab) => tab.id === activeTabMenuId.value) ?? null,
+);
+
+watch(
+  tabs,
+  (nextTabs, previousTabs) => {
+    const maxTabs = props.maxTabs ?? Number.POSITIVE_INFINITY;
+
+    if (
+      !Number.isFinite(maxTabs) ||
+      previousTabs.length !== maxTabs ||
+      nextTabs.length !== maxTabs
+    ) {
+      return;
+    }
+
+    const addedTab = nextTabs.some(
+      (tab) => !previousTabs.some((previousTab) => previousTab.id === tab.id),
+    );
+    const removedTab = previousTabs.some(
+      (tab) => !nextTabs.some((nextTab) => nextTab.id === tab.id),
+    );
+
+    if (!addedTab || !removedTab) {
+      return;
+    }
+
+    tabTransitionsEnabled.value = false;
+    void nextTick(() => {
+      tabTransitionsEnabled.value = true;
+    });
+  },
+  { flush: "sync" },
 );
 
 const themeVars = computed<Record<string, string>>(() => {
@@ -589,49 +623,9 @@ function handleDropdownMenuKeydown(event: KeyboardEvent) {
   flex-shrink: 0;
 }
 
-.drm-multitabs__context-menu,
-.drm-multitabs__dropdown-menu {
-  position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
-  z-index: 100;
-  min-width: 160px;
-}
-
-.drm-multitabs__context-menu {
-  left: 0;
-  right: auto;
-}
-
-.drm-multitabs__context-menu--fixed {
-  position: fixed;
-  top: auto;
-  left: auto;
-  right: auto;
-  z-index: 9999;
-}
-
-.drm-multitabs__dropdown-menu--fixed {
-  position: fixed;
-  top: auto;
-  left: auto;
-  right: auto;
-  z-index: 9999;
-}
-
-.drm-multitabs__menu-divider {
-  border: none;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  margin: 4px 0;
-}
-
 .drm-multitabs__overlay {
   position: fixed;
   inset: 0;
   z-index: 99;
-}
-
-.drm-multitabs__menu-item--active {
-  font-weight: 600;
 }
 </style>

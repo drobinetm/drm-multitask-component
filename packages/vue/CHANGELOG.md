@@ -1,5 +1,17 @@
 # @drm/multitabs-vue
 
+## 0.1.7
+
+### Patch Changes
+
+- Fix teleported dropdown and context menu styling so Vue menus stay anchored to
+  their trigger instead of rendering as normal blocks at the bottom of the
+  page.
+- Fix dropdown positioning near the viewport edge and avoid the transient tab
+  flicker that appeared when `maxTabs` replaced an older tab with a new one.
+- Keep the Vue demo sandbox status aligned with the active route so preview
+  state matches the tab currently open in the workspace.
+
 ## 0.1.6
 
 ### Patch Changes

@@ -220,6 +220,8 @@
 
 /* --- Context menu --- */
 .drm-multitabs__menu-card {
+  display: inline-flex;
+  flex-direction: column;
   background: var(--drm-tabs-menu-bg);
   border: var(--drm-tabs-menu-border);
   box-shadow: var(--drm-tabs-menu-shadow);
@@ -227,7 +229,42 @@
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   min-width: 160px;
+  width: max-content;
+  max-width: min(20rem, calc(100vw - 24px));
   padding: 4px;
+}
+
+.drm-multitabs__context-menu,
+.drm-multitabs__dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 100;
+  min-width: 160px;
+}
+
+.drm-multitabs__context-menu {
+  left: 0;
+  right: auto;
+}
+
+.drm-multitabs__context-menu--fixed,
+.drm-multitabs__dropdown-menu--fixed {
+  position: fixed;
+  top: auto;
+  left: auto;
+  right: auto;
+  z-index: 9999;
+}
+
+.drm-multitabs__menu-divider {
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  margin: 4px 0;
+}
+
+.drm-multitabs__menu-item--active {
+  font-weight: 600;
 }
 
 .drm-multitabs__menu-item {
