@@ -1,5 +1,26 @@
 # @drm/multitabs-react
 
+## Unreleased
+
+### Patch Changes
+
+- Respect custom `resolveTab()` IDs when deriving the active tab from the
+  current router location, so provider state stays aligned with route-driven
+  identities instead of always falling back to `location.pathname`.
+- Expand the published React peer dependency range to validate declarative
+  integrations on `react-router-dom@7` in addition to Router 6.
+- Stabilize route-driven tab synchronization so the current tab is not rewritten
+  when the resolved tab payload is semantically unchanged.
+- Fix `openTab()` so it still navigates when the tab ID is reused but the
+  target `search` or `hash` changes.
+- Remove built-in React label formatting tied to `caseNumber` and `caseTitle`.
+- Clarify the React docs around query-derived titles, Astro client islands, and
+  the currently validated `react-router-dom` compatibility range.
+- Scope `useTabContainerReload()` subscriptions per tab so reloads only notify
+  the matching tab container.
+- Support closing the React tab menus with `Escape` and document the keyboard
+  behavior.
+
 ## 0.2.0
 
 ### Minor Changes

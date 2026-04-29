@@ -1,11 +1,30 @@
-import { useState, useCallback, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 
 // Module-level singleton: tabId → nonce
 const tabReloadNonceState: Record<string, number> = {};
-const listeners = new Set<() => void>();
+const listenersByTabId = new Map<string, Set<() => void>>();
 
-function notify() {
-  listeners.forEach((fn) => fn());
+function notify(tabId: string) {
+  listenersByTabId.get(tabId)?.forEach((listener) => {
+    listener();
+  });
+}
+
+function subscribe(tabId: string, listener: () => void): () => void {
+  const listeners = listenersByTabId.get(tabId) ?? new Set<() => void>();
+  listeners.add(listener);
+  listenersByTabId.set(tabId, listeners);
+
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size === 0) {
+      listenersByTabId.delete(tabId);
+    }
+  };
+}
+
+function getSnapshot(tabId: string): number {
+  return tabReloadNonceState[tabId] ?? 0;
 }
 
 /**
@@ -13,8 +32,8 @@ function notify() {
  * Called by useMultiTabs when reloadTab() is triggered.
  */
 export function bumpTabContainerReload(tabId: string): void {
-  tabReloadNonceState[tabId] = (tabReloadNonceState[tabId] ?? 0) + 1;
-  notify();
+  tabReloadNonceState[tabId] = getSnapshot(tabId) + 1;
+  notify(tabId);
 }
 
 /**
@@ -26,17 +45,9 @@ export function bumpTabContainerReload(tabId: string): void {
  * // Use as key to force remount: <Content key={nonce} />
  */
 export function useTabContainerReload(tabId: string): number {
-  const [, setTick] = useState(0);
-  const forceUpdate = useCallback(() => {
-    setTick((value) => value + 1);
-  }, []);
-
-  useEffect(() => {
-    listeners.add(forceUpdate);
-    return () => {
-      listeners.delete(forceUpdate);
-    };
-  }, [forceUpdate]);
-
-  return tabReloadNonceState[tabId] ?? 0;
+  return useSyncExternalStore(
+    (onStoreChange) => subscribe(tabId, onStoreChange),
+    () => getSnapshot(tabId),
+    () => 0,
+  );
 }

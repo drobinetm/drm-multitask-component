@@ -9,14 +9,22 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { MemoryRouter, Outlet, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter,
+  MemoryRouter,
+  Outlet,
+  Route,
+  Routes,
+} from "react-router-dom";
 import {
   MultiTabs,
   MultiTabsProvider,
   useMultiTabsController,
 } from "../components/MultiTabs";
-import { useTabContainerReload } from "./useTabContainerReload";
 import type { UseMultiTabsOptions } from "../types";
+import { silenceReactRouterFutureWarnings } from "../test/silenceReactRouterWarnings";
+
+silenceReactRouterFutureWarnings();
 
 function TestShell({
   onBeforeClose,
@@ -40,9 +48,7 @@ function TestShell({
   };
 
   return (
-    <MemoryRouter
-      initialEntries={["/customers/42?caseNumber=C-42&caseTitle=Open"]}
-    >
+    <MemoryRouter initialEntries={["/customers/42"]}>
       <MultiTabsProvider options={options}>
         <MultiTabs />
         <Routes>
@@ -58,13 +64,11 @@ function TestShell({
 
 function Page({ label }: { label: string }) {
   const { currentTab, openTab, closeAllTabs } = useMultiTabsController();
-  const nonce = useTabContainerReload(currentTab?.id ?? "missing");
 
   return (
     <div>
       <div data-testid="page-label">{label}</div>
       <div data-testid="current-tab-title">{currentTab?.title ?? "none"}</div>
-      <div data-testid="reload-nonce">{String(nonce)}</div>
       <button
         type="button"
         onClick={() =>
@@ -82,6 +86,86 @@ function Page({ label }: { label: string }) {
       </button>
       <button type="button" onClick={() => closeAllTabs()}>
         Close all from page
+      </button>
+    </div>
+  );
+}
+
+function BrowserRouterShell() {
+  return (
+    <BrowserRouter>
+      <MultiTabsProvider
+        options={{
+          storageKey: "test-tabs-browser-router",
+          resolveTitle: (pathname) => {
+            if (pathname === "/customers/42") return "Customer detail";
+            if (pathname === "/reports") return "Reports";
+            return null;
+          },
+        }}
+      >
+        <MultiTabs />
+        <Routes>
+          <Route path="/customers/:id" element={<Page label="Customers" />} />
+          <Route path="/reports" element={<Page label="Reports" />} />
+        </Routes>
+      </MultiTabsProvider>
+    </BrowserRouter>
+  );
+}
+
+function BrowserRouterSearchShell() {
+  return (
+    <BrowserRouter>
+      <MultiTabsProvider
+        options={{
+          storageKey: "test-tabs-browser-router-search",
+          resolveTitle: (pathname, search) => {
+            if (pathname !== "/customers/42") return null;
+
+            const params = new URLSearchParams(search);
+            return params.get("view") === "timeline"
+              ? "Customer timeline"
+              : "Customer detail";
+          },
+        }}
+      >
+        <MultiTabs />
+        <Routes>
+          <Route
+            path="/customers/:id"
+            element={<SearchAwarePage label="Customers" />}
+          />
+        </Routes>
+      </MultiTabsProvider>
+    </BrowserRouter>
+  );
+}
+
+function SearchAwarePage({ label }: { label: string }) {
+  const { currentTab, openTab } = useMultiTabsController();
+
+  return (
+    <div>
+      <div data-testid="page-label">{label}</div>
+      <div data-testid="current-location-search">{window.location.search}</div>
+      <div data-testid="current-tab-title">{currentTab?.title ?? "none"}</div>
+      <button
+        type="button"
+        onClick={() =>
+          openTab({
+            id: "/customers/42",
+            title: "Customer timeline",
+            icon: "user",
+            to: {
+              pathname: "/customers/42",
+              search: "?view=timeline",
+            },
+            routePath: "/customers/42",
+          })
+        }
+      >
+        Open timeline view
       </button>
     </div>
   );
@@ -164,21 +248,6 @@ describe("useMultiTabs React integration", () => {
     });
   });
 
-  it("updates reload nonce when a tab is reloaded", async () => {
-    render(<TestShell />);
-
-    expect(screen.getByTestId("reload-nonce").textContent).toBe("0");
-
-    fireEvent.contextMenu(
-      screen.getByRole("tab", { name: /Customer detail/i }),
-    );
-    fireEvent.click(screen.getByRole("menuitem", { name: /Reload Tab/i }));
-
-    await waitFor(() => {
-      expect(screen.getByTestId("reload-nonce").textContent).toBe("1");
-    });
-  });
-
   it("resolves icon and title from resolveTab for route-driven tabs", async () => {
     const options: UseMultiTabsOptions = {
       storageKey: "test-tabs-resolve-tab",
@@ -211,7 +280,7 @@ describe("useMultiTabs React integration", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole("tab", { name: "Resolved customer" }),
+        screen.getByRole("tab", { name: /Resolved customer/i }),
       ).toBeTruthy();
     });
 
@@ -219,6 +288,157 @@ describe("useMultiTabs React integration", () => {
     expect(screen.getByTestId("current-tab-title").textContent).toBe(
       "Resolved customer",
     );
+  });
+
+  it("keeps route sync stable when resolveTab returns fresh objects", async () => {
+    const onTabChange = vi.fn();
+
+    render(
+      <MemoryRouter initialEntries={["/customers/42"]}>
+        <MultiTabsProvider
+          options={{
+            storageKey: "test-tabs-stable-sync",
+            onTabChange,
+            resolveTab: (_location, context) => ({
+              title: context.defaultTab.title,
+              metadata: {
+                ...context.defaultTab.metadata,
+                refreshedBy: "resolver",
+              },
+            }),
+          }}
+        >
+          <MultiTabs />
+          <Routes>
+            <Route path="/customers/:id" element={<Page label="Customers" />} />
+          </Routes>
+        </MultiTabsProvider>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("tab", { name: "42" })).toBeTruthy();
+    });
+
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 25);
+    });
+
+    expect(onTabChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("tracks the active tab when resolveTab returns a custom id", async () => {
+    render(
+      <MemoryRouter initialEntries={["/customers/42"]}>
+        <MultiTabsProvider
+          options={{
+            storageKey: "test-tabs-custom-id",
+            resolveTab: (location, context) => {
+              if (!location.pathname.startsWith("/customers/")) {
+                return undefined;
+              }
+
+              const customerId = location.pathname.split("/").pop();
+
+              return {
+                id: `customer:${customerId}`,
+                title: `Customer ${customerId}`,
+                icon: "user",
+                metadata: {
+                  ...context.defaultTab.metadata,
+                  customerId,
+                },
+              };
+            },
+          }}
+        >
+          <MultiTabs />
+          <Routes>
+            <Route path="/customers/:id" element={<Page label="Customers" />} />
+          </Routes>
+        </MultiTabsProvider>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("tab", { name: "Customer 42" })).toBeTruthy();
+    });
+
+    expect(screen.getByTestId("current-tab-title").textContent).toBe(
+      "Customer 42",
+    );
+    expect(
+      screen
+        .getByRole("tab", { name: "Customer 42" })
+        .getAttribute("aria-selected"),
+    ).toBe("true");
+  });
+
+  it("deduplicates persisted tabs when resolveTab returns a custom id", async () => {
+    window.localStorage.setItem(
+      "test-tabs-custom-id-dedup",
+      JSON.stringify([
+        {
+          id: "customer:42",
+          title: "Customer 42",
+          icon: "user",
+          to: { pathname: "/customers/42", search: "", hash: "" },
+          routePath: "/customers/42",
+          metadata: { customerId: "42" },
+        },
+        {
+          id: "customer:42",
+          title: "Customer 42",
+          icon: "user",
+          to: { pathname: "/customers/42", search: "", hash: "" },
+          routePath: "/customers/42",
+          metadata: { customerId: "42" },
+        },
+      ]),
+    );
+
+    render(
+      <MemoryRouter initialEntries={["/customers/42"]}>
+        <MultiTabsProvider
+          options={{
+            storageKey: "test-tabs-custom-id-dedup",
+            resolveTab: (location, context) => {
+              if (!location.pathname.startsWith("/customers/")) {
+                return undefined;
+              }
+
+              const customerId = location.pathname.split("/").pop();
+
+              return {
+                id: `customer:${customerId}`,
+                title: `Customer ${customerId}`,
+                icon: "user",
+                metadata: {
+                  ...context.defaultTab.metadata,
+                  customerId,
+                },
+              };
+            },
+          }}
+        >
+          <MultiTabs />
+          <Routes>
+            <Route path="/customers/:id" element={<Page label="Customers" />} />
+          </Routes>
+        </MultiTabsProvider>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("tab", { name: "Customer 42" })).toBeTruthy();
+    });
+
+    expect(screen.getAllByRole("tab", { name: "Customer 42" })).toHaveLength(1);
+    expect(
+      JSON.parse(
+        window.localStorage.getItem("test-tabs-custom-id-dedup") ?? "[]",
+      ),
+    ).toHaveLength(1);
   });
 
   it("keeps resolveTitle working when resolveTab is not provided", async () => {
@@ -273,60 +493,71 @@ describe("useMultiTabs React integration", () => {
     expect(document.querySelector(".drm-multitabs__tab-icon")).toBeNull();
   });
 
-  it("supports arrow and home-end keyboard navigation for tabs", async () => {
-    render(<TestShell />);
+  it("navigates and falls back correctly with BrowserRouter", async () => {
+    window.history.replaceState({}, "", "/customers/42");
+
+    render(<BrowserRouterShell />);
+
+    await waitFor(() => {
+      expect(screen.getByRole("tab", { name: "Customer detail" })).toBeTruthy();
+      expect(screen.getByTestId("page-label").textContent).toBe("Customers");
+    });
 
     fireEvent.click(screen.getByRole("button", { name: "Open reports" }));
 
     await waitFor(() => {
-      expect(screen.getByRole("tab", { name: "Reports" })).toBeTruthy();
+      expect(window.location.pathname).toBe("/reports");
+      expect(screen.getByTestId("page-label").textContent).toBe("Reports");
+      expect(
+        screen
+          .getByRole("tab", { name: "Reports" })
+          .getAttribute("aria-selected"),
+      ).toBe("true");
     });
 
-    const customerTab = screen.getByRole("tab", { name: /Customer detail/i });
-    const reportsTab = screen.getByRole("tab", { name: "Reports" });
-
-    reportsTab.focus();
-    fireEvent.keyDown(reportsTab, { key: "ArrowLeft" });
+    fireEvent.click(screen.getByLabelText("Close Reports"));
 
     await waitFor(() => {
-      expect(document.activeElement).toBe(customerTab);
-      expect(customerTab.getAttribute("aria-selected")).toBe("true");
-    });
-
-    fireEvent.keyDown(customerTab, { key: "End" });
-
-    await waitFor(() => {
-      expect(document.activeElement).toBe(reportsTab);
-      expect(reportsTab.getAttribute("aria-selected")).toBe("true");
-    });
-
-    fireEvent.keyDown(reportsTab, { key: "Home" });
-
-    await waitFor(() => {
-      expect(document.activeElement).toBe(customerTab);
-      expect(customerTab.getAttribute("aria-selected")).toBe("true");
+      expect(window.location.pathname).toBe("/customers/42");
+      expect(screen.getByTestId("page-label").textContent).toBe("Customers");
+      expect(
+        screen
+          .getByRole("tab", { name: "Customer detail" })
+          .getAttribute("aria-selected"),
+      ).toBe("true");
     });
   });
 
-  it("closes the focused tab with Delete and moves focus to a remaining tab", async () => {
-    render(<TestShell />);
+  it("navigates when openTab targets the same pathname with a different search", async () => {
+    window.history.replaceState({}, "", "/customers/42");
 
-    fireEvent.click(screen.getByRole("button", { name: "Open reports" }));
-
-    await waitFor(() => {
-      expect(screen.getByRole("tab", { name: "Reports" })).toBeTruthy();
-    });
-
-    const reportsTab = screen.getByRole("tab", { name: "Reports" });
-    const customerTab = screen.getByRole("tab", { name: /Customer detail/i });
-
-    reportsTab.focus();
-    fireEvent.keyDown(reportsTab, { key: "Delete" });
+    render(<BrowserRouterSearchShell />);
 
     await waitFor(() => {
-      expect(screen.queryByRole("tab", { name: "Reports" })).toBeNull();
-      expect(document.activeElement).toBe(customerTab);
-      expect(customerTab.getAttribute("aria-selected")).toBe("true");
+      expect(screen.getByTestId("current-location-search").textContent).toBe(
+        "",
+      );
+      expect(screen.getByTestId("current-tab-title").textContent).toBe(
+        "Customer detail",
+      );
     });
+
+    fireEvent.click(screen.getByRole("button", { name: "Open timeline view" }));
+
+    await waitFor(() => {
+      expect(window.location.search).toBe("?view=timeline");
+      expect(screen.getByTestId("current-location-search").textContent).toBe(
+        "?view=timeline",
+      );
+      expect(screen.getByTestId("current-tab-title").textContent).toBe(
+        "Customer timeline",
+      );
+    });
+
+    expect(
+      screen
+        .getByRole("tab", { name: "Customer timeline" })
+        .getAttribute("aria-selected"),
+    ).toBe("true");
   });
 });

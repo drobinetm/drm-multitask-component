@@ -35,6 +35,25 @@ export function AppShell() {
 `MultiTabsProvider` and `MultiTabs` must render inside a React Router context
 such as `BrowserRouter`, `MemoryRouter`, or `RouterProvider`.
 
+## Route contract
+
+The React package creates a tab from the active `react-router-dom` location.
+The default tab ID comes from `location.pathname`, so query strings do not
+create a separate tab identity unless you override that behavior in
+`resolveTab()`.
+
+These rules drive the default route sync.
+
+- `location.pathname` provides the stable tab identity.
+- `resolveTitle(pathname, search)` can replace the default humanized label.
+- `resolveTab(location, context)` can replace the ID, title, icon, target, and
+  metadata.
+- Navigating to the same pathname with a different `search` or `hash` keeps the
+  same tab identity but still updates the tab payload and navigation target.
+
+If your product needs separate tabs for query-driven states, return a custom ID
+from `resolveTab()`.
+
 ## Hooks
 
 Use `useMultiTabsController()` to inspect or change the shared tab state from
@@ -84,21 +103,24 @@ guards, and lifecycle callbacks.
     storageKey: "crm-tabs",
     maxTabs: 12,
     resolveTab: (location, context) => {
-      if (location.pathname.startsWith("/customers/")) {
-        return {
-          title: "Customer detail",
-          icon: "user",
-          metadata: {
-            ...context.defaultTab.metadata,
-            area: "crm",
-          },
-        };
+      if (!location.pathname.startsWith("/customers/")) {
+        return undefined;
       }
 
-      return undefined;
+      const customerId = location.pathname.split("/").pop();
+      const params = new URLSearchParams(location.search);
+
+      return {
+        id: `customer:${customerId}`,
+        title: params.get("name") ?? `Customer ${customerId}`,
+        icon: "user",
+        metadata: {
+          ...context.defaultTab.metadata,
+          area: "crm",
+          customerId,
+        },
+      };
     },
-    resolveTitle: (pathname) =>
-      pathname.startsWith("/customers/") ? "Customer detail" : null,
     onBeforeClose: (tab, context) => !tab.metadata?.unsaved,
     onTabOpen: (tab) => console.log("opened", tab.id),
     onTabClose: (tab) => console.log("closed", tab.id),
@@ -117,7 +139,8 @@ Supported options:
   removed.
 - `resolveTab`: route-aware tab resolver for titles, icons, IDs, targets, and
   metadata.
-- `resolveTitle`: maps router locations to human-readable tab labels.
+- `resolveTitle`: maps router locations to human-readable tab labels when the
+  default pathname-based tab identity is still the desired identity.
 - `onBeforeClose`: blocks `closeTab()` and `closeAllTabs()` when it returns
   `false`.
 - `onTabOpen`: fires when a new tab is added.
@@ -174,6 +197,23 @@ function handleExternalRefresh(tabId: string) {
 }
 ```
 
+Reload notifications are scoped per `tabId`. Reloading one tab does not force
+other `useTabContainerReload()` subscribers to re-render.
+
+## Behavior details
+
+The package keeps the current router location represented as a tab and persists
+the tab list whenever it changes.
+
+- Visiting a new route appends a new tab unless the tab identity already exists.
+- Revisiting an existing tab identity reuses that tab and refreshes its payload.
+- Closing the active tab navigates to the next tab, previous tab, or first tab.
+- Closing the last remaining tab is ignored so one valid tab always remains.
+- Closing all tabs keeps the active tab and any tabs blocked by
+  `onBeforeClose`.
+- Drag-and-drop reorders tabs and persists the updated order.
+- Invalid persisted JSON falls back to an empty stored tab list.
+
 ## Styling with Tailwind or other CSS frameworks
 
 The package ships plain class names and a single stylesheet. Import
@@ -196,8 +236,67 @@ The package ships plain class names and a single stylesheet. Import
 - The package reads `localStorage` only in the browser. During SSR it starts
   with an empty tab list and hydrates on the client.
 - React 18 and React 19 are supported peer dependency targets.
+- `react-router-dom@6` and `react-router-dom@7` are validated peer dependency
+  targets for the current declarative-router integration surface.
 - In React Server Components environments, render `MultiTabsProvider` and
   `MultiTabs` from a client component boundary.
+- In Astro, mount the React shell from a client island such as
+  `client:only="react"`, `client:load`, or `client:visible` because the tabs
+  depend on router state and browser storage.
+
+For application shells in Astro, prefer `client:only="react"` or
+`client:load` so the router-backed workspace is ready immediately. Reserve
+`client:visible` for demos or non-critical surfaces.
+
+## Accessibility
+
+The tab rail uses `role="tablist"` and tab buttons use `role="tab"` with
+`aria-selected`. Close actions remain separate labeled buttons, which keeps the
+main tab activation target and the destructive close action distinct.
+
+Keyboard support:
+
+- `ArrowLeft`: move focus and activation to the previous tab.
+- `ArrowRight`: move focus and activation to the next tab.
+- `Home`: jump to the first tab.
+- `End`: jump to the last tab.
+- `Delete`: close the focused tab when another tab is available.
+- `Escape`: close the open tab menu or the dropdown list.
+
+## Testing
+
+The package includes route sync, keyboard interaction, drag-and-drop, menu
+portals, and persistence. Test both the package and your shell integration.
+
+Run the package checks with:
+
+```bash
+pnpm --filter @drobinetm/multitabs-react test
+pnpm --filter @drobinetm/multitabs-react build
+```
+
+Recommended integration coverage:
+
+- Open a tab when navigation reaches a new route.
+- Reuse the same tab when the route identity already exists.
+- Close the active tab and assert the fallback navigation.
+- Verify your `resolveTab()` rules for custom IDs and query-driven labels.
+- Verify keyboard flows including `Escape` for menus.
+- Watch `useTabContainerReload()` inside routed pages that support reload.
+
+## Troubleshooting
+
+Use these checks when the shell behavior does not match your route model.
+
+- If tabs do not navigate, verify that `MultiTabsProvider` renders inside a
+  React Router provider.
+- If a query-driven view reuses the wrong tab, return a custom ID from
+  `resolveTab()` instead of relying on `pathname` alone.
+- If you mount the shell in Astro, keep it inside a client island because the
+  tabs depend on router context and browser storage.
+- If a reload action appears global, pass the active tab ID into
+  `useTabContainerReload(tabId)` and trigger refreshes with the matching
+  `bumpTabContainerReload(tabId)`.
 
 ## Public API
 

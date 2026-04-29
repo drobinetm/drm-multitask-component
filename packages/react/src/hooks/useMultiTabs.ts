@@ -48,13 +48,20 @@ function humanizePathname(pathname: string): string {
     .trim();
 }
 
-function getSearchParam(search: string, key: string): string | null {
-  return new URLSearchParams(search).get(key);
-}
+function dedupeTabsById(tabs: MultiTabItem[]): MultiTabItem[] {
+  const seen = new Set<string>();
+  const deduped: MultiTabItem[] = [];
 
-// ---------------------------------------------------------------------------
-// localStorage persistence
-// ---------------------------------------------------------------------------
+  for (let index = tabs.length - 1; index >= 0; index -= 1) {
+    const tab = tabs[index];
+    if (!tab || seen.has(tab.id)) continue;
+
+    seen.add(tab.id);
+    deduped.unshift(tab);
+  }
+
+  return deduped;
+}
 
 function readStoredTabs(storageKey: string): MultiTabItem[] {
   if (typeof window === "undefined") return [];
@@ -62,7 +69,7 @@ function readStoredTabs(storageKey: string): MultiTabItem[] {
     const raw = window.localStorage.getItem(storageKey);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as MultiTabItem[];
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? dedupeTabsById(parsed) : [];
   } catch {
     return [];
   }
@@ -71,10 +78,79 @@ function readStoredTabs(storageKey: string): MultiTabItem[] {
 function writeStoredTabs(storageKey: string, tabs: MultiTabItem[]): void {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(storageKey, JSON.stringify(tabs));
+    window.localStorage.setItem(
+      storageKey,
+      JSON.stringify(dedupeTabsById(tabs)),
+    );
   } catch {
     // localStorage may be unavailable
   }
+}
+
+function serializeForComparison(value: unknown): string {
+  try {
+    return JSON.stringify(value) ?? "undefined";
+  } catch {
+    return String(value);
+  }
+}
+
+function areTabsEqual(
+  nextTab: MultiTabItem,
+  previousTab: MultiTabItem,
+): boolean {
+  return (
+    nextTab.id === previousTab.id &&
+    nextTab.title === previousTab.title &&
+    nextTab.icon === previousTab.icon &&
+    nextTab.routePath === previousTab.routePath &&
+    serializeForComparison(nextTab.to) ===
+      serializeForComparison(previousTab.to) &&
+    serializeForComparison(nextTab.metadata) ===
+      serializeForComparison(previousTab.metadata)
+  );
+}
+
+function normalizeNavigationTarget(target: MultiTabItem["to"]): string {
+  if (typeof target === "string") {
+    return target;
+  }
+
+  return `${target.pathname ?? ""}${target.search ?? ""}${target.hash ?? ""}`;
+}
+
+function findTabForLocation(
+  tabs: MultiTabItem[],
+  locationTarget: string,
+  pathname: string,
+): {
+  index: number;
+  tab: MultiTabItem | null;
+} {
+  const byTargetIndex = tabs.findIndex(
+    (tab) => normalizeNavigationTarget(tab.to) === locationTarget,
+  );
+
+  if (byTargetIndex !== -1) {
+    return {
+      index: byTargetIndex,
+      tab: tabs[byTargetIndex] ?? null,
+    };
+  }
+
+  const byPathIndex = tabs.findIndex((tab) => tab.routePath === pathname);
+
+  if (byPathIndex !== -1) {
+    return {
+      index: byPathIndex,
+      tab: tabs[byPathIndex] ?? null,
+    };
+  }
+
+  return {
+    index: -1,
+    tab: null,
+  };
 }
 
 function buildCloseContext(
@@ -145,12 +221,9 @@ export function useMultiTabs(
     writeStoredTabs(opts.storageKey, tabs);
   }, [tabs, opts.storageKey]);
 
-  // Current tab ID
-  const currentTabId = useMemo(() => generateTabId(location), [location]);
-
-  const currentTab = useMemo(
-    () => tabs.find((t) => t.id === currentTabId) ?? null,
-    [tabs, currentTabId],
+  const currentLocationTarget = useMemo(
+    () => `${location.pathname}${location.search}${location.hash}`,
+    [location.hash, location.pathname, location.search],
   );
 
   // ---------------------------------------------------------------------------
@@ -158,18 +231,15 @@ export function useMultiTabs(
   // ---------------------------------------------------------------------------
 
   const resolveTabFromLocation = useCallback(
-    (loc: Location): MultiTabItem => {
+    (loc: Location, existingTab: MultiTabItem | null): MultiTabItem => {
       const id = generateTabId(loc);
-      const existing = tabs.find((t) => t.id === id);
 
       let title =
         opts.resolveTitle?.(loc.pathname, loc.search) ??
-        getSearchParam(loc.search, "staffTitle") ??
-        getSearchParam(loc.search, "caseNumber") ??
         humanizePathname(loc.pathname);
 
       // Preserve previous title if new location lost it
-      if (!title && existing?.title) title = existing.title;
+      if (!title && existingTab?.title) title = existingTab.title;
 
       const defaultTab: MultiTabItem = {
         id,
@@ -186,7 +256,7 @@ export function useMultiTabs(
 
       const resolved =
         opts.resolveTab?.(loc, {
-          existingTab: existing ?? null,
+          existingTab,
           defaultTab,
         }) ?? {};
 
@@ -206,7 +276,27 @@ export function useMultiTabs(
 
       return mergedTab;
     },
-    [opts.resolveTab, opts.resolveTitle, opts.defaultIcon, tabs],
+    [opts.resolveTab, opts.resolveTitle, opts.defaultIcon],
+  );
+
+  const currentLocationTab = useMemo(() => {
+    const match = findTabForLocation(
+      tabs,
+      currentLocationTarget,
+      location.pathname,
+    );
+
+    return resolveTabFromLocation(location, match.tab);
+  }, [currentLocationTarget, location, resolveTabFromLocation, tabs]);
+
+  const currentTabId = useMemo(
+    () => currentLocationTab.id,
+    [currentLocationTab.id],
+  );
+
+  const currentTab = useMemo(
+    () => tabs.find((tab) => tab.id === currentTabId) ?? currentLocationTab,
+    [tabs, currentLocationTab, currentTabId],
   );
 
   // ---------------------------------------------------------------------------
@@ -214,14 +304,20 @@ export function useMultiTabs(
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
-    const id = generateTabId(location);
-    const resolved = resolveTabFromLocation(location);
-
     setTabs((prev) => {
-      const index = prev.findIndex((t) => t.id === id);
+      const nextTabs = dedupeTabsById(prev);
+      const match = findTabForLocation(
+        nextTabs,
+        currentLocationTarget,
+        location.pathname,
+      );
+      const index = match.index;
+      const existingTab = match.tab;
+      const resolved = resolveTabFromLocation(location, existingTab);
+      const id = resolved.id;
 
       if (index === -1) {
-        let next = [...prev];
+        let next = [...nextTabs];
         if (opts.maxTabs !== Infinity && next.length >= opts.maxTabs) {
           const removeIdx = next.findIndex((t) => t.id !== id);
           if (removeIdx !== -1) next.splice(removeIdx, 1);
@@ -230,11 +326,15 @@ export function useMultiTabs(
         return [...next, resolved];
       }
 
-      const updated = [...prev];
-      updated[index] = { ...updated[index]!, ...resolved };
+      if (existingTab && areTabsEqual(resolved, existingTab)) {
+        return nextTabs;
+      }
+
+      const updated = [...nextTabs];
+      updated[index] = resolved;
       return updated;
     });
-  }, [location, resolveTabFromLocation, opts.maxTabs]);
+  }, [currentLocationTarget, location, resolveTabFromLocation, opts.maxTabs]);
 
   // ---------------------------------------------------------------------------
   // Public API
@@ -242,10 +342,10 @@ export function useMultiTabs(
 
   const openTab = useCallback(
     (tab: MultiTabItem) => {
-      if (tab.id === currentTabId) return;
+      if (normalizeNavigationTarget(tab.to) === currentLocationTarget) return;
       navigate(tab.to);
     },
-    [currentTabId, navigate],
+    [currentLocationTarget, navigate],
   );
 
   const closeTab = useCallback(
