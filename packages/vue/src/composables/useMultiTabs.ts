@@ -1,130 +1,78 @@
-import { computed, effectScope, ref, watch } from "vue";
-import type { Ref } from "vue";
+import { computed, ref, toValue, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import type {
-  RouteLocationRaw,
-  RouteLocationNormalizedLoaded,
-} from "vue-router";
-import type { MultiTabItem, UseMultiTabsOptions } from "@/types";
+  MultiTabCloseContext,
+  MultiTabItem,
+  UseMultiTabsOptions,
+} from "@/types";
 import { bumpTabContainerReload } from "./useTabContainerReload";
+import {
+  createScopedStorageKey,
+  getRuntimeStore,
+  resetMultiTabsRuntime,
+} from "./internal/runtimeStore";
+import { resolveTabFromRoute } from "./internal/routeTabResolver";
+import { generateTabId } from "./internal/tabId";
 
-const DEFAULT_OPTIONS: Required<UseMultiTabsOptions> = {
+interface ResolvedUseMultiTabsOptions {
+  storageKey: string;
+  defaultIcon: string;
+  maxTabs: number;
+  resolveTab: NonNullable<UseMultiTabsOptions["resolveTab"]>;
+  tabs: UseMultiTabsOptions["tabs"];
+  activeTabId: UseMultiTabsOptions["activeTabId"];
+  onTabsChange: NonNullable<UseMultiTabsOptions["onTabsChange"]>;
+  onActiveTabIdChange: NonNullable<UseMultiTabsOptions["onActiveTabIdChange"]>;
+  onBeforeClose: NonNullable<UseMultiTabsOptions["onBeforeClose"]>;
+  onTabOpen: NonNullable<UseMultiTabsOptions["onTabOpen"]>;
+  onTabClose: NonNullable<UseMultiTabsOptions["onTabClose"]>;
+  onTabChange: NonNullable<UseMultiTabsOptions["onTabChange"]>;
+}
+
+const DEFAULT_OPTIONS: ResolvedUseMultiTabsOptions = {
   storageKey: "drm-multitabs",
   defaultIcon: "circle",
   maxTabs: Infinity,
   resolveTab: () => undefined,
+  tabs: undefined,
+  activeTabId: undefined,
+  onTabsChange: () => undefined,
+  onActiveTabIdChange: () => undefined,
+  onBeforeClose: () => true,
+  onTabOpen: () => undefined,
+  onTabClose: () => undefined,
+  onTabChange: () => undefined,
 };
 
-interface MultiTabsStore {
-  tabs: Ref<MultiTabItem[]>;
-}
+const isDev = Boolean(
+  (import.meta as ImportMeta & { env?: { DEV?: boolean } }).env?.DEV,
+);
 
-const persistenceScope = effectScope(true);
-const stores = new Map<string, MultiTabsStore>();
-
-// ---------------------------------------------------------------------------
-// Tab ID generation
-// ---------------------------------------------------------------------------
-
-function serializeParams(params: Record<string, string | string[]>): string {
-  return Object.entries(params)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([k, v]) => `${k}:"${Array.isArray(v) ? v.join(",") : v}"`)
-    .join("|");
-}
-
-export function generateTabId(route: RouteLocationNormalizedLoaded): string {
-  const name = route.name ? String(route.name) : null;
-  const params = route.params as Record<string, string | string[]>;
-
-  if (name) {
-    const serialized = serializeParams(params);
-    return serialized ? `${name}::${serialized}` : name;
-  }
-
-  return route.path;
-}
-
-// ---------------------------------------------------------------------------
-// Title helpers
-// ---------------------------------------------------------------------------
-
-function humanizeRouteName(name: string | null | undefined): string {
-  if (!name) return "Page";
-  return String(name)
-    .replace(/[-_]/g, " ")
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/\b\w/g, (c) => c.toUpperCase())
-    .trim();
-}
-
-// ---------------------------------------------------------------------------
-// localStorage persistence
-// ---------------------------------------------------------------------------
-
-type SerializedTab = Omit<MultiTabItem, "to"> & { to: string };
-
-function serializeTab(tab: MultiTabItem): SerializedTab {
+function buildCloseContext(
+  tab: MultiTabItem,
+  reason: MultiTabCloseContext["reason"],
+  tabs: MultiTabItem[],
+  currentTabId: string,
+): MultiTabCloseContext {
   return {
-    ...tab,
-    to: typeof tab.to === "string" ? tab.to : JSON.stringify(tab.to),
+    reason,
+    currentTabId,
+    remainingTabs: tabs.filter((item) => item.id !== tab.id),
   };
 }
 
-function deserializeTab(raw: SerializedTab): MultiTabItem {
-  let to: RouteLocationRaw;
-  try {
-    to =
-      typeof raw.to === "string" && raw.to.startsWith("{")
-        ? JSON.parse(raw.to)
-        : raw.to;
-  } catch {
-    to = raw.to;
-  }
-  return { ...raw, to };
-}
-
-function readStoredTabs(storageKey: string): MultiTabItem[] {
-  try {
-    const raw = localStorage.getItem(storageKey);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as SerializedTab[];
-    return Array.isArray(parsed) ? parsed.map(deserializeTab) : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeStoredTabs(storageKey: string, tabs: MultiTabItem[]): void {
-  try {
-    localStorage.setItem(storageKey, JSON.stringify(tabs.map(serializeTab)));
-  } catch {
-    // localStorage may be unavailable in SSR or private browsing
-  }
-}
-
-function getStore(storageKey: string): MultiTabsStore {
-  const existing = stores.get(storageKey);
-  if (existing) {
-    return existing;
+function canCloseTab(
+  tab: MultiTabItem,
+  reason: MultiTabCloseContext["reason"],
+  tabs: MultiTabItem[],
+  currentTabId: string,
+  onBeforeClose?: UseMultiTabsOptions["onBeforeClose"],
+): boolean | Promise<boolean> {
+  if (!onBeforeClose) {
+    return true;
   }
 
-  const store: MultiTabsStore = {
-    tabs: ref<MultiTabItem[]>(readStoredTabs(storageKey)),
-  };
-
-  persistenceScope.run(() => {
-    watch(
-      store.tabs,
-      (val) => {
-        writeStoredTabs(storageKey, val);
-      },
-      { deep: true },
-    );
-  });
-
-  stores.set(storageKey, store);
-  return store;
+  return onBeforeClose(tab, buildCloseContext(tab, reason, tabs, currentTabId));
 }
 
 // ---------------------------------------------------------------------------
@@ -148,111 +96,165 @@ function getStore(storageKey: string): MultiTabsStore {
  * const { tabs, currentTabId, openTab, closeTab } = inject('multiTabs')
  */
 export function useMultiTabs(options: UseMultiTabsOptions = {}) {
-  const opts: Required<UseMultiTabsOptions> = {
+  const opts = {
     ...DEFAULT_OPTIONS,
     ...options,
-  };
+  } satisfies UseMultiTabsOptions;
   const route = useRoute();
   const router = useRouter();
-  const store = getStore(opts.storageKey);
+  const storageKey = computed<string>(
+    () => toValue(opts.storageKey) ?? DEFAULT_OPTIONS.storageKey,
+  );
+  const resolvedDefaultIcon = computed<string>(
+    () => toValue(opts.defaultIcon) ?? DEFAULT_OPTIONS.defaultIcon,
+  );
+  const resolvedMaxTabs = computed<number>(
+    () => toValue(opts.maxTabs) ?? DEFAULT_OPTIONS.maxTabs,
+  );
+  const resolvedTabResolver = computed(() => opts.resolveTab);
+  const store = computed(() => getRuntimeStore(storageKey.value));
+  const previousOpenedTabIds = ref<string[]>([]);
+  const previousActiveTabId = ref<string | null>(null);
 
   // ---------------------------------------------------------------------------
   // State
   // ---------------------------------------------------------------------------
 
-  const tabs = store.tabs;
+  const uncontrolledTabs = computed<MultiTabItem[]>({
+    get: () => store.value.tabs.value,
+    set: (nextTabs) => {
+      store.value.tabs.value = nextTabs;
+    },
+  });
+  const controlledTabs = computed(() => toValue(opts.tabs));
+  const isControlled = computed(() => controlledTabs.value !== undefined);
 
-  const currentTabId = computed(() => generateTabId(route));
+  const tabs = computed<MultiTabItem[]>({
+    get: () => controlledTabs.value ?? uncontrolledTabs.value,
+    set: (nextTabs) => {
+      if (isControlled.value) {
+        opts.onTabsChange(nextTabs);
+        return;
+      }
 
-  const currentTab = computed<MultiTabItem | null>(
-    () => tabs.value.find((t) => t.id === currentTabId.value) ?? null,
-  );
+      uncontrolledTabs.value = nextTabs;
+    },
+  });
 
   // ---------------------------------------------------------------------------
   // Tab resolution helpers (override these via options for custom behavior)
   // ---------------------------------------------------------------------------
 
-  function buildDefaultTabFromRoute(
-    r: RouteLocationNormalizedLoaded,
-  ): MultiTabItem {
-    const id = generateTabId(r);
-    const existing = tabs.value.find((t) => t.id === id);
+  const resolvedCurrentTab = computed(() =>
+    resolveTabFromRoute(
+      route,
+      tabs.value,
+      resolvedDefaultIcon.value,
+      resolvedTabResolver,
+    ),
+  );
 
-    // Resolve title
-    let title = "";
-    if (r.query["staffTitle"]) {
-      title = String(r.query["staffTitle"]);
-    } else if (r.query["caseNumber"]) {
-      title = String(r.query["caseNumber"]);
-    } else if (r.meta?.["title"]) {
-      title = String(r.meta["title"]);
-    } else if (r.name) {
-      title = humanizeRouteName(String(r.name));
-    } else {
-      title = r.path;
+  const currentTabId = computed(() => {
+    const controlledActiveTabId = toValue(opts.activeTabId);
+    return controlledActiveTabId ?? resolvedCurrentTab.value.id;
+  });
+
+  const currentTab = computed<MultiTabItem | null>(
+    () => tabs.value.find((t) => t.id === currentTabId.value) ?? null,
+  );
+  const currentControlledTab = computed<MultiTabItem | null>(() => {
+    const controlledId = toValue(opts.activeTabId);
+    if (controlledId === undefined) {
+      return null;
     }
 
-    // Preserve previous title if the new route no longer carries it
-    if (!title && existing?.title) {
-      title = existing.title;
-    }
-
-    const icon = (r.meta?.["icon"] as string | undefined) ?? opts.defaultIcon;
-
-    return {
-      id,
-      title,
-      icon,
-      to: { name: r.name ?? undefined, params: r.params, query: r.query },
-      isMenuItem: Boolean(r.meta?.["isMenuItem"]),
-      routeName: r.name ? String(r.name) : null,
-      caseNumber: r.query["caseNumber"] ? String(r.query["caseNumber"]) : null,
-      caseTitle: r.query["caseTitle"] ? String(r.query["caseTitle"]) : null,
-    };
-  }
-
-  function resolveTabFromRoute(r: RouteLocationNormalizedLoaded): MultiTabItem {
-    const defaultTab = buildDefaultTabFromRoute(r);
-    const resolved =
-      opts.resolveTab(r, {
-        existingTab: tabs.value.find((t) => t.id === defaultTab.id) ?? null,
-        defaultTab,
-      }) ?? {};
-
-    return {
-      ...defaultTab,
-      ...resolved,
-      id: resolved.id ?? defaultTab.id,
-      to: resolved.to ?? defaultTab.to,
-      title: resolved.title ?? defaultTab.title,
-      icon: resolved.icon ?? defaultTab.icon,
-      isMenuItem: resolved.isMenuItem ?? defaultTab.isMenuItem,
-    };
-  }
+    return tabs.value.find((tab) => tab.id === controlledId) ?? null;
+  });
 
   // ---------------------------------------------------------------------------
   // Route sync
   // ---------------------------------------------------------------------------
 
   function syncCurrentTab() {
-    const id = generateTabId(route);
+    const resolved = resolvedCurrentTab.value;
+    const id = resolved.id;
     const index = tabs.value.findIndex((t) => t.id === id);
-    const resolved = resolveTabFromRoute(route);
+    const nextTabs = [...tabs.value];
 
     if (index === -1) {
       // Respect maxTabs: remove oldest non-active tab if over limit
-      if (opts.maxTabs !== Infinity && tabs.value.length >= opts.maxTabs) {
-        const removeIdx = tabs.value.findIndex((t) => t.id !== id);
-        if (removeIdx !== -1) tabs.value.splice(removeIdx, 1);
+      while (
+        resolvedMaxTabs.value !== Infinity &&
+        nextTabs.length >= resolvedMaxTabs.value
+      ) {
+        const removeIdx = nextTabs.findIndex((t) => t.id !== id);
+        if (removeIdx === -1) break;
+        nextTabs.splice(removeIdx, 1);
       }
-      tabs.value.push(resolved);
+      nextTabs.push(resolved);
+      tabs.value = nextTabs;
     } else {
       // Update metadata (title, caseNumber, etc.) in place
-      tabs.value[index] = { ...tabs.value[index]!, ...resolved };
+      nextTabs[index] = { ...nextTabs[index]!, ...resolved };
+      tabs.value = nextTabs;
     }
+
+    opts.onActiveTabIdChange(resolved.id);
   }
 
   watch(() => route.fullPath, syncCurrentTab, { immediate: true });
+
+  watch(storageKey, () => {
+    previousOpenedTabIds.value = [];
+    previousActiveTabId.value = null;
+    syncCurrentTab();
+  });
+
+  watch(
+    currentControlledTab,
+    async (tab) => {
+      if (!isControlled.value || !tab) {
+        return;
+      }
+
+      const currentRouteTab = resolvedCurrentTab.value;
+      if (currentRouteTab.id === tab.id) {
+        return;
+      }
+
+      await router.push(tab.to);
+    },
+    { flush: "post" },
+  );
+
+  watch(
+    [isControlled, controlledTabs, () => toValue(opts.activeTabId)],
+    ([controlled, nextTabs, activeId]) => {
+      if (!controlled) {
+        return;
+      }
+
+      if (!Array.isArray(nextTabs)) {
+        return;
+      }
+
+      if (activeId === null) {
+        return;
+      }
+
+      if (
+        activeId !== undefined &&
+        !nextTabs.some((tab) => tab.id === activeId)
+      ) {
+        if (isDev) {
+          console.warn(
+            `[drm-multitabs-vue] Controlled activeTabId "${activeId}" does not exist in the controlled tabs list.`,
+          );
+        }
+      }
+    },
+    { immediate: true },
+  );
 
   // ---------------------------------------------------------------------------
   // Public API
@@ -263,44 +265,148 @@ export function useMultiTabs(options: UseMultiTabsOptions = {}) {
     router.push(tab.to);
   }
 
-  function closeTab(tab: MultiTabItem): void {
-    if (tabs.value.length <= 1) return;
+  async function closeTab(tab: MultiTabItem): Promise<boolean> {
+    if (tabs.value.length <= 1) return false;
 
     const index = tabs.value.findIndex((t) => t.id === tab.id);
-    if (index === -1) return;
+    if (index === -1) return false;
 
-    tabs.value.splice(index, 1);
+    const canClose = await canCloseTab(
+      tab,
+      "close",
+      tabs.value,
+      currentTabId.value,
+      opts.onBeforeClose,
+    );
+
+    if (!canClose) {
+      return false;
+    }
+
+    const refreshedIndex = tabs.value.findIndex((t) => t.id === tab.id);
+    if (refreshedIndex === -1) return false;
+
+    const nextTabs = [...tabs.value];
+    nextTabs.splice(refreshedIndex, 1);
+    tabs.value = nextTabs;
+    opts.onTabClose(tab);
 
     // If the closed tab was active, navigate to an adjacent tab
     if (tab.id === currentTabId.value) {
       const nextTab =
-        tabs.value[index] ?? tabs.value[index - 1] ?? tabs.value[0];
-      if (nextTab) router.push(nextTab.to);
+        nextTabs[refreshedIndex] ?? nextTabs[refreshedIndex - 1] ?? nextTabs[0];
+      if (nextTab) {
+        opts.onActiveTabIdChange(nextTab.id);
+        await router.push(nextTab.to);
+      }
     }
+
+    return true;
   }
 
-  function closeAllTabs(): void {
+  async function closeAllTabs(): Promise<MultiTabItem[]> {
     const active = currentTab.value;
-    if (!active) return;
-    tabs.value = [active];
+    if (!active) return [];
+
+    const tabsToClose = tabs.value.filter((tab) => tab.id !== active.id);
+    if (tabsToClose.length === 0) {
+      return [];
+    }
+
+    const closableTabs: MultiTabItem[] = [];
+
+    for (const tab of tabsToClose) {
+      const canClose = await canCloseTab(
+        tab,
+        "close-all",
+        tabs.value,
+        currentTabId.value,
+        opts.onBeforeClose,
+      );
+
+      if (canClose) {
+        closableTabs.push(tab);
+      }
+    }
+
+    if (closableTabs.length === 0) {
+      return [];
+    }
+
+    const blockedIds = new Set(
+      tabsToClose
+        .filter(
+          (tab) => !closableTabs.some((closable) => closable.id === tab.id),
+        )
+        .map((tab) => tab.id),
+    );
+
+    tabs.value = [
+      active,
+      ...tabsToClose.filter((tab) => blockedIds.has(tab.id)),
+    ];
+    closableTabs.forEach((tab) => {
+      opts.onTabClose(tab);
+    });
+
+    return closableTabs;
   }
 
   function moveTab(sourceId: string, targetId: string): void {
     if (sourceId === targetId) return;
-    const sourceIndex = tabs.value.findIndex((t) => t.id === sourceId);
-    const targetIndex = tabs.value.findIndex((t) => t.id === targetId);
+    const nextTabs = [...tabs.value];
+    const sourceIndex = nextTabs.findIndex((t) => t.id === sourceId);
+    const targetIndex = nextTabs.findIndex((t) => t.id === targetId);
     if (sourceIndex === -1 || targetIndex === -1) return;
 
-    const [moved] = tabs.value.splice(sourceIndex, 1);
-    if (moved) tabs.value.splice(targetIndex, 0, moved);
+    const [moved] = nextTabs.splice(sourceIndex, 1);
+    if (moved) nextTabs.splice(targetIndex, 0, moved);
+    tabs.value = nextTabs;
   }
 
   function reloadTab(tab: MultiTabItem): void {
     bumpTabContainerReload(tab.id);
     if (tab.id !== currentTabId.value) {
+      opts.onActiveTabIdChange(tab.id);
       router.push(tab.to);
     }
   }
+
+  watch(
+    tabs,
+    (nextTabs) => {
+      const previousIds = previousOpenedTabIds.value;
+      const nextIds = nextTabs.map((tab) => tab.id);
+
+      if (previousIds.length === 0) {
+        previousOpenedTabIds.value = nextIds;
+        return;
+      }
+
+      for (const tab of nextTabs) {
+        if (!previousIds.includes(tab.id)) {
+          opts.onTabOpen(tab);
+        }
+      }
+
+      previousOpenedTabIds.value = nextIds;
+    },
+    { immediate: true },
+  );
+
+  watch(
+    currentTab,
+    (tab) => {
+      if (!tab || previousActiveTabId.value === tab.id) {
+        previousActiveTabId.value = tab?.id ?? null;
+        return;
+      }
+
+      previousActiveTabId.value = tab.id;
+      opts.onTabChange(tab);
+    },
+    { immediate: true },
+  );
 
   return {
     // State
@@ -319,3 +425,5 @@ export function useMultiTabs(options: UseMultiTabsOptions = {}) {
 }
 
 export type UseMultiTabsReturn = ReturnType<typeof useMultiTabs>;
+
+export { createScopedStorageKey, resetMultiTabsRuntime, generateTabId };

@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "baseUrl": "..",
+    "paths": {
+      "@drobinetm/multitabs-vue": ["./src/index.ts"],
+      "@drobinetm/multitabs-vue/styles": ["./src/styles.d.ts"]
+    }
+  },
+  "include": ["./styles-import.ts"]
+}

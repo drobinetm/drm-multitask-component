@@ -1,6 +1,6 @@
 {
   "name": "@drobinetm/multitabs-vue",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Browser-tab-style navigation component for Vue 3",
   "keywords": [
     "vue",
@@ -24,7 +24,10 @@
       "import": "./dist/index.es.js",
       "require": "./dist/index.cjs.js"
     },
-    "./styles": "./dist/style.css"
+    "./styles": {
+      "types": "./dist/styles.d.ts",
+      "default": "./dist/style.css"
+    }
   },
   "main": "./dist/index.cjs.js",
   "module": "./dist/index.es.js",
@@ -36,7 +39,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "vite build && vue-tsc --emitDeclarationOnly",
+    "build": "vite build && vue-tsc --emitDeclarationOnly && cp src/styles.d.ts dist/styles.d.ts && vue-tsc -p test-dts/tsconfig.json",
     "dev": "vite build --watch",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",

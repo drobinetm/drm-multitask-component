@@ -112,92 +112,48 @@
       @click="closeAllMenus"
     />
 
-    <!-- Context menu: teleported to body to escape overflow:hidden containers -->
-    <Teleport to="body">
-      <div
-        v-if="activeTabMenuId !== null"
-        class="drm-multitabs__menu-card drm-multitabs__context-menu drm-multitabs__context-menu--fixed"
-        ref="contextMenuRef"
-        role="menu"
-        :style="{ left: menuPosition.x + 'px', top: menuPosition.y + 'px' }"
-        @click.stop
-        @keydown="handleContextMenuKeydown"
-      >
-        <template v-for="tab in tabs" :key="tab.id">
-          <template v-if="activeTabMenuId === tab.id">
-            <button
-              class="drm-multitabs__menu-item"
-              type="button"
-              role="menuitem"
-              @click="handleReloadTab(tab)"
-            >
-              <slot name="menu-icon-reload">↺</slot>
-              Reload Tab
-            </button>
-            <button
-              class="drm-multitabs__menu-item drm-multitabs__menu-item--danger"
-              type="button"
-              role="menuitem"
-              @click="handleCloseTab(tab)"
-            >
-              <slot name="menu-icon-close">✕</slot>
-              Close Tab
-            </button>
-          </template>
-        </template>
-      </div>
-    </Teleport>
+    <MultiTabsContextMenu
+      ref="contextMenu"
+      :tab="activeContextTab"
+      :position="menuPosition"
+      @keydown="handleContextMenuKeydown"
+      @reload="handleReloadTab"
+      @close="handleCloseTab"
+    >
+      <template #menu-icon-reload>
+        <slot name="menu-icon-reload">↺</slot>
+      </template>
+      <template #menu-icon-close>
+        <slot name="menu-icon-close">✕</slot>
+      </template>
+    </MultiTabsContextMenu>
 
-    <Teleport to="body">
-      <div
-        v-if="dropdownOpen"
-        class="drm-multitabs__menu-card drm-multitabs__dropdown-menu drm-multitabs__dropdown-menu--fixed"
-        ref="dropdownMenuRef"
-        role="menu"
-        :style="{
-          left: Math.max(12, dropdownPosition.x - 160) + 'px',
-          top: dropdownPosition.y + 'px',
-        }"
-        @click.stop
-        @keydown="handleDropdownMenuKeydown"
-      >
-        <button
-          v-for="tab in tabs"
-          :key="tab.id"
-          class="drm-multitabs__menu-item"
-          :class="{
-            'drm-multitabs__menu-item--active': tab.id === currentTabId,
-          }"
-          type="button"
-          role="menuitem"
-          @click="handleDropdownTabClick(tab)"
-        >
-          {{
-            tab.caseNumber ? `[${tab.caseNumber}] ${tab.caseTitle}` : tab.title
-          }}
-        </button>
-
-        <hr class="drm-multitabs__menu-divider" />
-
-        <button
-          class="drm-multitabs__menu-item drm-multitabs__menu-item--danger"
-          type="button"
-          role="menuitem"
-          @click="handleCloseAllTabs"
-        >
-          <slot name="menu-icon-close-all">✕</slot>
-          Close All Tabs
-        </button>
-      </div>
-    </Teleport>
+    <MultiTabsDropdownMenu
+      ref="dropdownMenu"
+      :open="dropdownOpen"
+      :tabs="tabs"
+      :current-tab-id="currentTabId"
+      :position="dropdownPosition"
+      @keydown="handleDropdownMenuKeydown"
+      @select="handleDropdownTabClick"
+      @close-all="handleCloseAllTabs"
+    >
+      <template #menu-icon-close-all>
+        <slot name="menu-icon-close-all">✕</slot>
+      </template>
+    </MultiTabsDropdownMenu>
   </nav>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, shallowRef } from "vue";
 import type { ComponentPublicInstance } from "vue";
+import MultiTabsContextMenu from "./MultiTabsContextMenu.vue";
+import MultiTabsDropdownMenu from "./MultiTabsDropdownMenu.vue";
 import { useMultiTabs } from "@/composables/useMultiTabs";
 import type {
+  MultiTabCloseGuard,
+  MultiTabMoveEvent,
   MultiTabItem,
   MultiTabsTheme,
   MultiTabResolver,
@@ -208,6 +164,10 @@ import "@/styles/multitabs.css";
 const props = defineProps<{
   /** Custom theme overrides via CSS custom properties */
   theme?: MultiTabsTheme;
+  /** Controlled tab list for host-managed state */
+  tabs?: MultiTabItem[];
+  /** Controlled active tab ID for host-managed state */
+  activeTabId?: string | null;
   /** localStorage key used by the internal multitabs store */
   storageKey?: string;
   /** Default icon used when no icon can be resolved */
@@ -216,25 +176,50 @@ const props = defineProps<{
   maxTabs?: number;
   /** Optional route-to-tab resolver */
   resolveTab?: MultiTabResolver;
+  /** Return false to block a close action */
+  onBeforeClose?: MultiTabCloseGuard;
 }>();
 
-const multiTabsOptions: UseMultiTabsOptions = {};
+const emit = defineEmits<{
+  open: [tab: MultiTabItem];
+  close: [tab: MultiTabItem];
+  activate: [tab: MultiTabItem];
+  move: [event: MultiTabMoveEvent];
+  reload: [tab: MultiTabItem];
+  "close-all": [tabs: MultiTabItem[]];
+  "update:tabs": [tabs: MultiTabItem[]];
+  "update:activeTabId": [tabId: string | null];
+}>();
 
-if (props.storageKey !== undefined) {
-  multiTabsOptions.storageKey = props.storageKey;
-}
+const multiTabsOptions: UseMultiTabsOptions = {
+  storageKey: computed(() => props.storageKey),
+  defaultIcon: computed(() => props.defaultIcon),
+  maxTabs: computed(() => props.maxTabs),
+  resolveTab: (route, context) => props.resolveTab?.(route, context),
+  tabs: computed(() => props.tabs),
+  activeTabId: computed(() => props.activeTabId),
+  onBeforeClose: (tab, context) => props.onBeforeClose?.(tab, context) ?? true,
+};
 
-if (props.defaultIcon !== undefined) {
-  multiTabsOptions.defaultIcon = props.defaultIcon;
-}
+multiTabsOptions.onTabsChange = (nextTabs) => {
+  emit("update:tabs", nextTabs);
+};
 
-if (props.maxTabs !== undefined) {
-  multiTabsOptions.maxTabs = props.maxTabs;
-}
+multiTabsOptions.onActiveTabIdChange = (tabId) => {
+  emit("update:activeTabId", tabId);
+};
 
-if (props.resolveTab !== undefined) {
-  multiTabsOptions.resolveTab = props.resolveTab;
-}
+multiTabsOptions.onTabOpen = (tab) => {
+  emit("open", tab);
+};
+
+multiTabsOptions.onTabClose = (tab) => {
+  emit("close", tab);
+};
+
+multiTabsOptions.onTabChange = (tab) => {
+  emit("activate", tab);
+};
 
 const {
   tabs,
@@ -253,9 +238,19 @@ const draggingTabId = shallowRef<string | null>(null);
 const dragOverTabId = shallowRef<string | null>(null);
 const dropdownOpen = shallowRef(false);
 const dropdownButton = shallowRef<HTMLElement | null>(null);
-const contextMenuRef = shallowRef<HTMLElement | null>(null);
-const dropdownMenuRef = shallowRef<HTMLElement | null>(null);
+const contextMenu = shallowRef<InstanceType<
+  typeof MultiTabsContextMenu
+> | null>(null);
+const dropdownMenu = shallowRef<InstanceType<
+  typeof MultiTabsDropdownMenu
+> | null>(null);
 const tabButtonRefs = new Map<string, HTMLButtonElement>();
+
+const contextMenuRef = computed(() => contextMenu.value?.menuRef ?? null);
+const dropdownMenuRef = computed(() => dropdownMenu.value?.menuRef ?? null);
+const activeContextTab = computed(
+  () => tabs.value.find((tab) => tab.id === activeTabMenuId.value) ?? null,
+);
 
 const themeVars = computed<Record<string, string>>(() => {
   if (!props.theme) return {};
@@ -394,7 +389,7 @@ function handleTabClick(tab: MultiTabItem) {
   openTab(tab);
 }
 
-function handleCloseTab(tab: MultiTabItem) {
+async function handleCloseTab(tab: MultiTabItem) {
   if (activeTabMenuId.value === tab.id) activeTabMenuId.value = null;
   const currentIndex = tabs.value.findIndex((item) => item.id === tab.id);
   const fallbackTabId =
@@ -402,21 +397,29 @@ function handleCloseTab(tab: MultiTabItem) {
     tabs.value[currentIndex - 1]?.id ??
     currentTabId.value;
 
-  closeTab(tab);
+  const closed = await closeTab(tab);
+  if (!closed) {
+    return;
+  }
 
   void nextTick(() => {
     focusTabButton(fallbackTabId ?? currentTabId.value);
   });
 }
 
-function handleCloseAllTabs() {
+async function handleCloseAllTabs() {
+  const tabsBeforeClose = [...tabs.value];
   closeAllMenus();
-  closeAllTabs();
+  const closedTabs = await closeAllTabs();
+  if (closedTabs.length > 0) {
+    emit("close-all", tabsBeforeClose);
+  }
 }
 
 function handleReloadTab(tab: MultiTabItem) {
   closeAllMenus();
   reloadTab(tab);
+  emit("reload", tab);
   void nextTick(() => {
     focusTabButton(tab.id);
   });
@@ -462,6 +465,11 @@ function handleDrop(tab: MultiTabItem, event: DragEvent) {
   const sourceId = event.dataTransfer?.getData("text/plain");
   if (sourceId && sourceId !== tab.id) {
     moveTab(sourceId, tab.id);
+    emit("move", {
+      sourceId,
+      targetId: tab.id,
+      tabs: [...tabs.value],
+    });
   }
   dragOverTabId.value = null;
 }

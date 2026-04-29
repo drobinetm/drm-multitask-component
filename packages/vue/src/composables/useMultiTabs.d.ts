@@ -1,7 +1,6 @@
-import type { Ref } from "vue";
-import type { RouteLocationNormalizedLoaded } from "vue-router";
 import type { MultiTabItem, UseMultiTabsOptions } from "@/types";
-export declare function generateTabId(route: RouteLocationNormalizedLoaded): string;
+import { createScopedStorageKey, resetMultiTabsRuntime } from "./internal/runtimeStore";
+import { generateTabId } from "./internal/tabId";
 /**
  * Core composable for the MultiTabs system.
  *
@@ -19,15 +18,16 @@ export declare function generateTabId(route: RouteLocationNormalizedLoaded): str
  * const { tabs, currentTabId, openTab, closeTab } = inject('multiTabs')
  */
 export declare function useMultiTabs(options?: UseMultiTabsOptions): {
-    tabs: Ref<MultiTabItem[], MultiTabItem[]>;
+    tabs: import("vue").WritableComputedRef<MultiTabItem[], MultiTabItem[]>;
     currentTabId: import("vue").ComputedRef<string>;
     currentTab: import("vue").ComputedRef<MultiTabItem | null>;
     openTab: (tab: MultiTabItem) => void;
-    closeTab: (tab: MultiTabItem) => void;
-    closeAllTabs: () => void;
+    closeTab: (tab: MultiTabItem) => Promise<boolean>;
+    closeAllTabs: () => Promise<MultiTabItem[]>;
     moveTab: (sourceId: string, targetId: string) => void;
     reloadTab: (tab: MultiTabItem) => void;
     generateTabId: typeof generateTabId;
 };
 export type UseMultiTabsReturn = ReturnType<typeof useMultiTabs>;
+export { createScopedStorageKey, resetMultiTabsRuntime, generateTabId };
 //# sourceMappingURL=useMultiTabs.d.ts.map

@@ -2,6 +2,7 @@ import type {
   RouteLocationNormalizedLoaded,
   RouteLocationRaw,
 } from "vue-router";
+import type { MaybeRefOrGetter } from "vue";
 
 /**
  * Represents a single open tab in the MultiTabs component.
@@ -33,6 +34,24 @@ export interface ResolveTabContext {
 }
 
 export type ResolveTabResult = Partial<MultiTabItem> | null | void;
+
+export type MultiTabCloseReason = "close" | "close-all";
+
+export interface MultiTabCloseContext {
+  /** Why the close attempt happened. */
+  reason: MultiTabCloseReason;
+  /** Active tab ID when the close was requested. */
+  currentTabId: string;
+  /** Tabs that would remain if the close is allowed. */
+  remainingTabs: MultiTabItem[];
+}
+
+export type MultiTabCloseGuardResult = boolean | Promise<boolean>;
+
+export type MultiTabCloseGuard = (
+  tab: MultiTabItem,
+  context: MultiTabCloseContext,
+) => MultiTabCloseGuardResult;
 
 export type MultiTabResolver = (
   route: RouteLocationNormalizedLoaded,
@@ -77,14 +96,44 @@ export interface MultiTabsTheme {
  */
 export interface UseMultiTabsOptions {
   /** localStorage key for persisting tabs. Default: 'drm-multitabs' */
-  storageKey?: string;
+  storageKey?: MaybeRefOrGetter<string | undefined>;
   /** Default icon for tabs without a resolved icon. Default: 'circle' */
-  defaultIcon?: string;
+  defaultIcon?: MaybeRefOrGetter<string | undefined>;
   /** Maximum number of tabs allowed. Default: unlimited */
-  maxTabs?: number;
+  maxTabs?: MaybeRefOrGetter<number | undefined>;
   /**
    * Optional route-to-tab resolver.
    * Return a partial tab object to override the default route mapping.
    */
   resolveTab?: MultiTabResolver;
+  /** Controlled tabs source for host-managed state. */
+  tabs?: MaybeRefOrGetter<MultiTabItem[] | undefined>;
+  /** Controlled active tab ID for host-managed state. */
+  activeTabId?: MaybeRefOrGetter<string | null | undefined>;
+  /** Called when the composable needs to update a controlled tabs list. */
+  onTabsChange?: (tabs: MultiTabItem[]) => void;
+  /** Called when the active tab ID changes. */
+  onActiveTabIdChange?: (tabId: string | null) => void;
+  /** Return false to block a close or close-all operation. */
+  onBeforeClose?: MultiTabCloseGuard;
+  /** Fires when route sync adds a new tab. */
+  onTabOpen?: (tab: MultiTabItem) => void;
+  /** Fires after a tab is removed. */
+  onTabClose?: (tab: MultiTabItem) => void;
+  /** Fires when the active tab changes. */
+  onTabChange?: (tab: MultiTabItem) => void;
 }
+
+export interface MultiTabMoveEvent {
+  /** Tab ID moved by the user. */
+  sourceId: string;
+  /** Tab ID used as the drop target. */
+  targetId: string;
+  /** Current tab order after the move completes. */
+  tabs: MultiTabItem[];
+}
+
+export type CreateScopedStorageKey = (
+  baseKey: string,
+  ...segments: Array<string | number | null | undefined>
+) => string;

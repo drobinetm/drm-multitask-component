@@ -1,5 +1,20 @@
 # @drm/multitabs-vue
 
+## 0.1.6
+
+### Patch Changes
+
+- Fix controlled-mode router synchronization so host-driven `activeTabId`
+  updates navigate correctly, and make `storageKey`, `defaultIcon`, and
+  `maxTabs` reactive even when they start undefined.
+- Refactor the Vue tabs controller into smaller internal modules for tab ID
+  generation, route-to-tab resolution, and runtime persistence.
+- Add `createScopedStorageKey()` for isolating persisted tab state across user
+  sessions, Astro islands, and docs previews, plus development warnings for an
+  invalid controlled `activeTabId`.
+- Update the Vue docs, README, and Astro demos to document scoped persistence,
+  richer icon integration patterns, and more representative island hydration.
+
 ## 0.1.5
 
 ### Patch Changes
