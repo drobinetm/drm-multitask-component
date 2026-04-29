@@ -7,6 +7,9 @@ export default defineConfig({
   output: "static",
   integrations: [vue(), react()],
   vite: {
+    resolve: {
+      dedupe: ["react", "react-dom", "react-router-dom"],
+    },
     optimizeDeps: {
       include: ["react-router-dom", "@drobinetm/multitabs-vue", "vue-router"],
       exclude: ["@drobinetm/multitabs-react"],

@@ -24,7 +24,8 @@ const navItems = [
 
 const normalizePath = (path: string) => path.replace(/\/$/, '') || '/'
 const currentPath = normalizePath(Astro.url.pathname)
-const enableClientRouter = !currentPath.startsWith('/docs/')
+const enableClientRouter =
+  !currentPath.startsWith('/docs/') && !currentPath.startsWith('/demos/')
 const isNavItemCurrent = (href: string) => {
   if (href === '/docs/getting-started') {
     return currentPath === '/docs/getting-started' || currentPath.startsWith('/docs/') || currentPath.startsWith('/demos/')

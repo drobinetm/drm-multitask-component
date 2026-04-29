@@ -466,11 +466,17 @@ const compactStatus = computed(() => {
     return [] as string[];
   }
 
+  const activePath =
+    router.currentRoute.value.path || scopedConfig.value.initialPath;
+  const activeRoute = scopedConfig.value.routes.find(
+    (route) => route.path === activePath,
+  );
+
   return [
     compactScenarioNote.value,
     `Routes: ${scopedConfig.value.routes.length}`,
     `Storage: ${scopedConfig.value.storageKey}`,
-    `Active: ${scopedConfig.value.routes.find((route) => route.path === scopedConfig.value.initialPath)?.title ?? scopedConfig.value.routes.find((route) => route.path === scopedConfig.value.initialPath)?.label ?? scopedConfig.value.initialPath}`,
+    `Active: ${activeRoute?.title ?? activeRoute?.label ?? activePath}`,
   ];
 });
 
