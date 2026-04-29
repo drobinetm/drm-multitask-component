@@ -53,20 +53,16 @@ tab identity by default.
 The default resolver builds the title in this order.
 
 1. `resolveTitle(pathname, search)` if you provide it.
-2. `searchParams.staffTitle`
-3. `searchParams.caseNumber`
-4. A humanized version of the pathname.
+2. A humanized version of the pathname.
 
 These location fields are supported by default.
 
-| Field                     | Required | Purpose                                               |
-| ------------------------- | -------- | ----------------------------------------------------- |
-| `location.pathname`       | Yes      | Produces the stable tab ID and default title seed.    |
-| `location.search`         | No       | Lets `resolveTitle()` and default search parsing run. |
-| `searchParams.staffTitle` | No       | Overrides the default title.                          |
-| `searchParams.caseNumber` | No       | Supports case-style labels.                           |
-| `resolveTab().icon`       | No       | Provides an icon key for your custom `tabIcon`.       |
-| `resolveTab().metadata`   | No       | Stores consumer-defined metadata on the tab.          |
+| Field                   | Required | Purpose                                                     |
+| ----------------------- | -------- | ----------------------------------------------------------- |
+| `location.pathname`     | Yes      | Produces the stable tab ID and default title seed.          |
+| `location.search`       | No       | Lets `resolveTitle()` and `resolveTab()` inspect the route. |
+| `resolveTab().icon`     | No       | Provides an icon key for your custom `tabIcon`.             |
+| `resolveTab().metadata` | No       | Stores consumer-defined metadata on the tab.                |
 
 Navigating to the same pathname with different search params reuses the same
 tab and refreshes its metadata. If you need separate tabs for query-driven
@@ -103,25 +99,23 @@ close guards, and lifecycle callbacks.
     storageKey: "crm-tabs",
     maxTabs: 12,
     resolveTab: (location, context) => {
-      if (location.pathname.startsWith("/customers/")) {
-        return {
-          title: "Customer detail",
-          icon: "user",
-          metadata: {
-            ...context.defaultTab.metadata,
-            area: "crm",
-          },
-        };
+      if (!location.pathname.startsWith("/customers/")) {
+        return undefined;
       }
 
-      return undefined;
-    },
-    resolveTitle: (pathname, search) => {
-      const params = new URLSearchParams(search);
-      if (pathname.startsWith("/customers/")) {
-        return params.get("name") ?? "Customer detail";
-      }
-      return null;
+      const customerId = location.pathname.split("/").pop();
+      const params = new URLSearchParams(location.search);
+
+      return {
+        id: `customer:${customerId}`,
+        title: params.get("name") ?? `Customer ${customerId}`,
+        icon: "user",
+        metadata: {
+          ...context.defaultTab.metadata,
+          area: "crm",
+          customerId,
+        },
+      };
     },
     onBeforeClose: (tab) => !tab.metadata?.unsaved,
     onTabOpen: (tab) => console.log("opened", tab.id),
@@ -146,9 +140,13 @@ Option reference:
 - `onTabClose`: fires when a tab is removed.
 - `onTabChange`: fires when the active tab changes.
 
-`resolveTab` is now the main extension point when you need per-route icons,
-custom tab IDs, or metadata. `resolveTitle` remains available as a lightweight
-fallback when only the label needs customization.
+`resolveTab` is the main extension point when you need per-route icons, custom
+tab IDs, or metadata. `resolveTitle` remains available as a lightweight
+fallback when only the label changes and the default pathname-based tab ID is
+still correct.
+
+If you need query-driven titles, derive them explicitly in `resolveTitle()` or
+`resolveTab()` instead of relying on reserved query keys.
 
 ## Component props and slots
 
@@ -339,10 +337,15 @@ starts with an empty tab list and hydrates on the client.
 Compatibility notes:
 
 - React 18 and React 19 are supported peer dependency targets.
+- `react-router-dom@6` and `react-router-dom@7` are validated for the current
+  declarative-router API surface used by this package.
 - `MultiTabsProvider` and `MultiTabs` must render inside a React Router
   context.
 - In React Server Components environments, render the tabs shell from a client
   component boundary.
+- In Astro, mount the React shell from a client island such as
+  `client:only="react"`, `client:load`, or `client:visible` because the tabs
+  depend on router context and browser storage.
 
 ## Accessibility
 
@@ -358,6 +361,7 @@ Keyboard support:
 - `Home`: jump to the first tab.
 - `End`: jump to the last tab.
 - `Delete`: close the focused tab when another tab is available.
+- `Escape`: close the open tab menu or the dropdown list.
 
 ## Testing
 
@@ -386,6 +390,12 @@ Recommended integration coverage:
 
 - If tabs do not navigate, verify that `MultiTabsProvider` is rendered inside a
   React Router provider.
+- If `openTab()` reuses the same tab ID, the package still navigates when the
+  target `search` or `hash` changes. Return a custom `id` from `resolveTab()`
+  only when query-driven states must become separate tabs.
+- If your app uses React Router's newer package layout guidance, note that this
+  package still imports from `react-router-dom`. That remains compatible with
+  the validated declarative APIs in Router 7.
 - If you use React Server Components, render the tabs shell from a client
   component boundary.
 - During SSR, the tab list starts empty on the server and hydrates from

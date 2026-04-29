@@ -8,12 +8,8 @@ export default defineConfig({
   integrations: [vue(), react()],
   vite: {
     optimizeDeps: {
-      include: [
-        "react-router-dom",
-        "@drobinetm/multitabs-react",
-        "@drobinetm/multitabs-vue",
-        "vue-router",
-      ],
+      include: ["react-router-dom", "@drobinetm/multitabs-vue", "vue-router"],
+      exclude: ["@drobinetm/multitabs-react"],
     },
   },
 });

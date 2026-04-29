@@ -266,9 +266,22 @@ export default function DemoReact() {
         <MultiTabsProvider
           options={{
             storageKey: "drm-multitabs-demo-react",
-            resolveTitle: (pathname) =>
-              routeByPath.get(pathname)?.title ?? null,
-            defaultIcon: "home",
+            resolveTab: (location, context) => {
+              const route = routeByPath.get(location.pathname);
+
+              if (!route) {
+                return undefined;
+              }
+
+              return {
+                title: route.title,
+                icon: route.icon,
+                metadata: {
+                  ...context.defaultTab.metadata,
+                  demoLabel: route.label,
+                },
+              };
+            },
           }}
         >
           <MultiTabs

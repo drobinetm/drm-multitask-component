@@ -352,12 +352,24 @@ function ResolveTabSandbox() {
       <MemoryRouter initialEntries={[resolverRoutes[0]!.path]}>
         <MultiTabsProvider
           options={{
-            storageKey: "drm-docs-react-resolve-tab",
-            defaultIcon: "receipt",
-            resolveTitle: (pathname) => {
-              if (!pathname.startsWith("/orders/")) return null;
-              const orderId = pathname.split("/").pop();
-              return `Order ${orderId} workspace`;
+            storageKey: "drm-docs-react-resolve-tab-v2",
+            resolveTab: (location, context) => {
+              if (!location.pathname.startsWith("/orders/")) {
+                return undefined;
+              }
+
+              const orderId = location.pathname.split("/").pop();
+
+              return {
+                id: `order:${orderId}`,
+                title: `Order ${orderId} workspace`,
+                icon: "receipt",
+                metadata: {
+                  ...context.defaultTab.metadata,
+                  orderId,
+                  source: "docs-resolver-sandbox",
+                },
+              };
             },
           }}
         >
@@ -461,9 +473,9 @@ const sandboxes: SandboxDefinition[] = [
     eyebrow: "Resolver",
     title: "Dynamic route mapping",
     description:
-      "Demonstrates route params mapped to richer workspace labels through a title resolver.",
+      "Demonstrates route params mapped to richer workspace tabs through resolveTab, custom metadata, and custom IDs.",
     code: normalizeCodeBlock(
-      `const resolveTitle = (pathname) =>\n+  pathname.startsWith("/orders/")\n+    ? \`Order ${"${pathname.split('/').pop()}"} workspace\`\n+    : null\n+\n+<MultiTabsProvider\n+  options={{ defaultIcon: "receipt", resolveTitle }}\n+>\n+  <MultiTabs theme={baseTheme} />\n+</MultiTabsProvider>`,
+      `const resolveTab = (location, context) => {\n+  if (!location.pathname.startsWith("/orders/")) return undefined\n+\n+  const orderId = location.pathname.split("/").pop()\n+\n+  return {\n+    id: \`order:${"${orderId}"}\`,\n+    title: \`Order ${"${orderId}"} workspace\`,\n+    icon: "receipt",\n+    metadata: {\n+      ...context.defaultTab.metadata,\n+      orderId,\n+    },\n+  }\n+}\n+\n+<MultiTabsProvider\n+  options={{ resolveTab }}\n+>\n+  <MultiTabs theme={baseTheme} />\n+</MultiTabsProvider>`,
     ),
     renderPreview: () => <ResolveTabSandbox />,
   },

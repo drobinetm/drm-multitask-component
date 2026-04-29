@@ -29,6 +29,9 @@ export function getStaticPaths() {
     </style>
   </head>
   <body>
-    <DemoVue client:only="vue" scenario={Astro.params.scenario as ScenarioId | undefined} />
+    <DemoVue
+      client:only="vue"
+      scenario={Astro.params.scenario as ScenarioId | undefined}
+    />
   </body>
 </html>

@@ -18,8 +18,9 @@ import VueEdgeCaseSandboxes from "../../components/VueEdgeCaseSandboxes.astro";
           <p class="demo-desc">
             A real instance of <code>@drobinetm/multitabs-vue</code> running with
             <code>vue-router</code> using <code>createMemoryHistory</code> so it
-            doesn't affect the page URL. Navigate the links inside the shell to
-            open, close, and reorder tabs.
+            doesn't affect the page URL. The docs sandbox runs as an isolated
+            Vue-only island and uses a scoped <code>storageKey</code> so preview
+            state does not bleed into other Astro islands.
           </p>
         </div>
         <a href="/docs/vue/" class="btn" style="display:inline-flex;align-items:center;gap:0.4rem;margin-top:1rem;">

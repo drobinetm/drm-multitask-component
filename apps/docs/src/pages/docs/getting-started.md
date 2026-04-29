@@ -40,6 +40,11 @@ The API shape stays conceptually aligned across the supported stacks.
 - A tab reload primitive so tab content can remount or refetch.
 - CSS custom properties for theming.
 
+If your app renders multiple previews, tenants, or embedded shells in the same
+browser runtime, namespace persisted state per surface. The Vue package exposes
+`createScopedStorageKey()` and `resetMultiTabsRuntime()` for that isolation
+workflow.
+
 ## Theme the component
 
 The packages use CSS custom properties instead of a hard dependency on a UI

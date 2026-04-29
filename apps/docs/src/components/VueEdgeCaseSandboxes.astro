@@ -57,7 +57,10 @@ const sandboxes = [
         </header>
 
         <div class="vue-sandbox-instance">
-          <DemoVue scenario={sandbox.id} client:only="vue" />
+          <DemoVue
+            scenario={sandbox.id}
+            client:only="vue"
+          />
         </div>
       </div>
 

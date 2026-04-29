@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {
-  createApp,
   defineComponent,
+  getCurrentInstance,
   h,
   onMounted,
   onUnmounted,
@@ -14,7 +14,12 @@ import {
   RouterView,
   type RouteRecordRaw,
 } from "vue-router";
-import { MultiTabs, type MultiTabResolver } from "@drobinetm/multitabs-vue";
+import {
+  MultiTabs,
+  createScopedStorageKey as createTabsStorageKey,
+  resetMultiTabsRuntime,
+  type MultiTabResolver,
+} from "@drobinetm/multitabs-vue";
 import "@drobinetm/multitabs-vue/styles";
 
 export type ScenarioId =
@@ -24,6 +29,10 @@ export type ScenarioId =
   | "labels"
   | "resolver"
   | "slots";
+
+interface DemoVueProps {
+  scenario?: ScenarioId;
+}
 
 type DemoRoute = {
   name: string;
@@ -45,14 +54,9 @@ type DemoRoute = {
     | "check";
 };
 
-const props = withDefaults(
-  defineProps<{
-    scenario?: ScenarioId;
-  }>(),
-  {
-    scenario: "default",
-  },
-);
+const props = withDefaults(defineProps<DemoVueProps>(), {
+  scenario: "default",
+});
 
 const vueTheme = {
   shellBg: "rgba(65, 184, 131, 0.08)",
@@ -427,7 +431,18 @@ const scenarioConfigs: Record<
   },
 };
 
-const config = scenarioConfigs[props.scenario];
+const scopedConfig = computed(() => {
+  const baseConfig = scenarioConfigs[props.scenario];
+  const runtimeScope =
+    typeof window === "undefined"
+      ? props.scenario
+      : window.location.pathname.replace(/[^a-z0-9]+/gi, "-");
+
+  return {
+    ...baseConfig,
+    storageKey: createTabsStorageKey(baseConfig.storageKey, runtimeScope),
+  };
+});
 
 const compactScenarioNote = computed(() => {
   switch (props.scenario) {
@@ -447,21 +462,22 @@ const compactScenarioNote = computed(() => {
 });
 
 const compactStatus = computed(() => {
-  if (!config.compact) {
+  if (!scopedConfig.value.compact) {
     return [] as string[];
   }
 
   return [
     compactScenarioNote.value,
-    `Routes: ${config.routes.length}`,
-    `Active: ${config.routes.find((route) => route.path === config.initialPath)?.title ?? config.routes.find((route) => route.path === config.initialPath)?.label ?? config.initialPath}`,
+    `Routes: ${scopedConfig.value.routes.length}`,
+    `Storage: ${scopedConfig.value.storageKey}`,
+    `Active: ${scopedConfig.value.routes.find((route) => route.path === scopedConfig.value.initialPath)?.title ?? scopedConfig.value.routes.find((route) => route.path === scopedConfig.value.initialPath)?.label ?? scopedConfig.value.initialPath}`,
   ];
 });
 
 function buildRoutes() {
   const push = (path: string) => router.push(path);
 
-  return config.routes.map<RouteRecordRaw>((route) => ({
+  return scopedConfig.value.routes.map<RouteRecordRaw>((route) => ({
     name: route.name,
     path: route.path,
     component: defineComponent({
@@ -469,9 +485,14 @@ function buildRoutes() {
       render: () =>
         h(
           "div",
-          { class: ["demo-page", config.compact && "demo-page--compact"] },
+          {
+            class: [
+              "demo-page",
+              scopedConfig.value.compact && "demo-page--compact",
+            ],
+          },
           [
-            ...(config.compact
+            ...(scopedConfig.value.compact
               ? [
                   h(
                     "div",
@@ -482,8 +503,13 @@ function buildRoutes() {
               : []),
             h(
               "nav",
-              { class: ["demo-nav", config.compact && "demo-nav--compact"] },
-              config.routes.map((item) =>
+              {
+                class: [
+                  "demo-nav",
+                  scopedConfig.value.compact && "demo-nav--compact",
+                ],
+              },
+              scopedConfig.value.routes.map((item) =>
                 h(
                   "a",
                   {
@@ -500,7 +526,10 @@ function buildRoutes() {
             h(
               "div",
               {
-                class: ["demo-panel", config.compact && "demo-panel--compact"],
+                class: [
+                  "demo-panel",
+                  scopedConfig.value.compact && "demo-panel--compact",
+                ],
               },
               [
                 h("h3", route.title ?? route.label),
@@ -523,57 +552,57 @@ const router = createRouter({
   routes: buildRoutes(),
 });
 
+const ready = ref(false);
+const app = getCurrentInstance()?.appContext.app ?? null;
+
+app?.use(router);
+
 const Shell = defineComponent({
   name: "DemoVueShell",
   render: () => [
     h(
       MultiTabs,
       {
-        theme: config.theme ?? vueTheme,
-        storageKey: config.storageKey,
-        ...(config.maxTabs !== undefined ? { maxTabs: config.maxTabs } : {}),
-        ...(config.resolveTab ? { resolveTab: config.resolveTab } : {}),
+        theme: scopedConfig.value.theme ?? vueTheme,
+        storageKey: scopedConfig.value.storageKey,
+        ...(scopedConfig.value.maxTabs !== undefined
+          ? { maxTabs: scopedConfig.value.maxTabs }
+          : {}),
+        ...(scopedConfig.value.resolveTab
+          ? { resolveTab: scopedConfig.value.resolveTab }
+          : {}),
       },
       {
         "tab-icon": ({ tab }: { tab: { icon: string } }) =>
           renderIcon(tab.icon),
-        ...(config.slots ?? {}),
+        ...(scopedConfig.value.slots ?? {}),
       },
     ),
     h(RouterView),
   ],
 });
 
-const mountTarget = ref<HTMLElement | null>(null);
-let app: ReturnType<typeof createApp> | null = null;
-
 onMounted(async () => {
-  const mountElement = mountTarget.value;
-  if (!mountElement) return;
-
-  localStorage.removeItem(config.storageKey);
-  app = createApp(Shell);
-  app.use(router);
-  await router.push(config.initialPath);
+  resetMultiTabsRuntime(scopedConfig.value.storageKey);
+  localStorage.removeItem(scopedConfig.value.storageKey);
+  await router.replace(scopedConfig.value.initialPath);
   await router.isReady();
-
-  // Mount against the captured element. Reading the ref again after awaits can
-  // trip Vue's dev proxy when the setup context has already advanced.
-  app.mount(mountElement);
+  ready.value = true;
 });
 
 onUnmounted(() => {
-  app?.unmount();
-  app = null;
+  resetMultiTabsRuntime(scopedConfig.value.storageKey);
 });
 </script>
 
 <template>
   <div
     class="demo-shell-outer"
-    :class="{ 'demo-shell-outer--compact': config.compact }"
+    :class="{ 'demo-shell-outer--compact': scopedConfig.compact }"
   >
-    <div ref="mountTarget" class="demo-shell-inner" />
+    <div v-if="ready" class="demo-shell-inner">
+      <component :is="Shell" />
+    </div>
   </div>
 </template>
 

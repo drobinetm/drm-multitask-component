@@ -19,7 +19,9 @@ import ReactEdgeCaseSandboxes from "../../components/ReactEdgeCaseSandboxes.tsx"
             A real instance of <code>@drobinetm/multitabs-react</code> running with
             <code>react-router-dom</code> using <code>MemoryRouter</code> so it
             doesn't affect the page URL. Navigate the links inside the shell to
-            open, close, and reorder tabs.
+            open, close, and reorder tabs. The demo mounts as a
+            <code>client:only="react"</code> island because the shell depends on
+            router state and browser storage.
           </p>
         </div>
         <a href="/docs/react/" class="btn" style="display:inline-flex;align-items:center;gap:0.4rem;margin-top:1rem;">
