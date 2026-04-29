@@ -13,13 +13,9 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,vue,js,mjs,json,css,md,astro}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,vue,js,mjs,json,css,md,astro}\"",
-    "changeset": "changeset",
-    "version-packages": "changeset version",
-    "release": "turbo run build && changeset publish",
     "clean": "turbo run clean && rm -rf node_modules"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.1",
     "@eslint/js": "^8.57.1",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",

@@ -45,23 +45,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Detect React changeset
-        id: react_changeset
-        run: |
-          FOUND=$(grep -rl '@drobinetm/multitabs-react' .changeset/ 2>/dev/null || true)
-          echo "Changeset files found: ${FOUND:-none}"
-          if [ -n "$FOUND" ]; then
-            echo "has_changeset=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_changeset=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Skip publish when no React changeset exists
-        if: steps.react_changeset.outputs.has_changeset != 'true'
-        run: echo "No changeset for @drobinetm/multitabs-react was found. Skipping publish."
-
       - name: Ensure version is not already published
-        if: steps.react_changeset.outputs.has_changeset == 'true'
         run: |
           VERSION=$(node -p "require('./packages/react/package.json').version")
           if npm view "@drobinetm/multitabs-react@${VERSION}" version >/dev/null 2>&1; then
@@ -70,6 +54,5 @@ jobs:
           fi
 
       - name: Release React package
-        if: steps.react_changeset.outputs.has_changeset == 'true'
         run: npm publish --access public --tag "$NPM_DIST_TAG"
         working-directory: packages/react
