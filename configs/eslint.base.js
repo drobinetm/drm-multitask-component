@@ -65,10 +65,13 @@ export default [
   },
   {
     ignores: [
-      'dist/**',
-      'node_modules/**',
-      'coverage/**',
-      '.turbo/**',
+      '**/dist/**',
+      '**/node_modules/**',
+      '**/coverage/**',
+      '**/.turbo/**',
+      '**/.astro/**',
+      '**/*.timestamp-*.mjs',
+      '**/*.astro_astro_type_script_index_0_lang.*.js',
       '**/*.d.ts',
       '**/*.d.ts.map',
     ],

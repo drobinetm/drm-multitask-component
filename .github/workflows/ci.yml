@@ -39,3 +39,39 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+  react-router-compat:
+    name: React Router compat (Node ${{ matrix.node-version }}, Router ${{ matrix.router-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20.x]
+        router-version: [6.30.3, 7.14.2]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install React Router ${{ matrix.router-version }} in React package
+        run: pnpm add -D react-router-dom@${{ matrix.router-version }}
+        working-directory: packages/react
+
+      - name: Test React package
+        run: pnpm --filter @drobinetm/multitabs-react test
+
+      - name: Build React package
+        run: pnpm --filter @drobinetm/multitabs-react build
