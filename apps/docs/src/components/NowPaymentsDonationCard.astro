@@ -1,0 +1,271 @@
+---
+interface Props {
+  widgetUrl: string
+  docsUrl: string
+  eyebrow?: string
+  description?: string
+  buttonLabel?: string
+  fallbackLabel?: string
+  securityTitle?: string
+  securityCopy?: string
+}
+
+const {
+  widgetUrl,
+  docsUrl,
+  eyebrow = 'Donation',
+  description =
+    'NOWPayments is a crypto payment platform that lets supporters donate using multiple cryptocurrencies through a secure checkout flow.',
+  buttonLabel = 'Learn more about NOWPayments',
+  fallbackLabel = 'If the widget does not load, open the NOWPayments payment widget docs.',
+  securityTitle = 'Payments are processed by NOWPayments.',
+  securityCopy = 'Verify the currency, network, and amount before confirming the donation.',
+} = Astro.props
+---
+
+<div class="glass card np-card" aria-label="NOWPayments donation widget panel">
+  <div class="np-card__header">
+    <div class="eyebrow">{eyebrow}</div>
+    <p class="panel-copy np-card__intro">{description}</p>
+    <form class="np-card__form" action={docsUrl} method="get" target="_blank">
+      <button class="np-card__button" type="submit">
+        <span class="np-card__button-icon" aria-hidden="true">
+          <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M8 12L14 6M14 6H9.5M14 6V10.5"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+            <path
+              d="M12 11.5V14C12 14.5304 11.7893 15.0391 11.4142 15.4142C11.0391 15.7893 10.5304 16 10 16H6C5.46957 16 4.96086 15.7893 4.58579 15.4142C4.21071 15.0391 4 14.5304 4 14V10C4 9.46957 4.21071 8.96086 4.58579 8.58579C4.96086 8.21071 5.46957 8 6 8H8.5"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
+        </span>
+        {buttonLabel}
+      </button>
+    </form>
+  </div>
+
+  <div class="np-card__widget-shell">
+    <div class="np-card__widget-frame-wrap">
+      <iframe
+        class="np-card__widget-frame"
+        src={widgetUrl}
+        title="NOWPayments donation widget"
+        width="346"
+        height="623"
+        frameborder="0"
+        scrolling="no"
+        loading="lazy"
+        referrerpolicy="strict-origin-when-cross-origin"
+      />
+    </div>
+    <p class="np-card__fallback">
+      {fallbackLabel.split('NOWPayments payment widget docs')[0]}
+      <a href={docsUrl} target="_blank" rel="noopener noreferrer">
+        NOWPayments payment widget docs
+      </a>
+      .
+    </p>
+  </div>
+
+  <div class="np-card__note" role="note" aria-label="Donation security notice">
+    <strong>{securityTitle}</strong>
+    <p>{securityCopy}</p>
+  </div>
+</div>
+
+<style>
+  .np-card {
+    min-width: 0;
+    display: grid;
+    gap: 1rem;
+    padding: 1.4rem;
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(10, 18, 34, 0.76), rgba(6, 12, 24, 0.92));
+  }
+
+  .np-card__header,
+  .np-card__widget-shell,
+  .np-card__note {
+    min-width: 0;
+  }
+
+  .np-card__header {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .np-card__intro {
+    margin: 0;
+    max-width: 56ch;
+  }
+
+  .np-card__form {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .np-card__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    min-height: 2.9rem;
+    padding: 0.85rem 1.05rem;
+    border: 1px solid rgba(129, 190, 255, 0.28);
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(22, 39, 66, 0.92), rgba(10, 19, 35, 0.98));
+    color: #eef5ff;
+    font: inherit;
+    font-size: 0.94rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition:
+      transform 160ms ease,
+      border-color 160ms ease,
+      background 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .np-card__button:hover {
+    transform: translateY(-1px);
+    border-color: rgba(129, 190, 255, 0.42);
+    background: linear-gradient(180deg, rgba(29, 52, 85, 0.96), rgba(11, 22, 41, 1));
+  }
+
+  .np-card__button:active {
+    transform: scale(0.99);
+  }
+
+  .np-card__button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(129, 190, 255, 0.24);
+  }
+
+  .np-card__button-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.05rem;
+    height: 1.05rem;
+    flex: 0 0 auto;
+  }
+
+  .np-card__button-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .np-card__widget-shell {
+    display: grid;
+    justify-items: center;
+    gap: 0.9rem;
+    padding: 1rem;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+    text-align: center;
+  }
+
+  .np-card__widget-frame-wrap {
+    display: grid;
+    place-items: center;
+    width: 100%;
+  }
+
+  .np-card__widget-frame {
+    display: block;
+    width: min(100%, 346px);
+    max-width: 346px;
+    height: 623px;
+    margin-inline: auto;
+    border: 0;
+    border-radius: 16px;
+    background: #ffffff;
+  }
+
+  .np-card__fallback {
+    margin: 0;
+    color: var(--text-soft);
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .np-card__fallback a {
+    color: #8ad9ff;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .np-card__fallback a:hover {
+    text-decoration: underline;
+  }
+
+  .np-card__note {
+    position: relative;
+    margin-top: 1rem;
+    padding: 0.95rem 1rem 0.95rem 1.15rem;
+    border-radius: 16px;
+    border: 1px solid rgba(129, 190, 255, 0.18);
+    background: linear-gradient(180deg, rgba(24, 43, 72, 0.55), rgba(11, 20, 36, 0.72));
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+  }
+
+  .np-card__note::before {
+    content: '';
+    position: absolute;
+    left: 0.7rem;
+    top: 0.9rem;
+    bottom: 0.9rem;
+    width: 2px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(129, 190, 255, 0.9), rgba(89, 213, 255, 0.32));
+  }
+
+  .np-card__note strong {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: #eef5ff;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+  }
+
+  .np-card__note p {
+    margin: 0;
+    color: var(--text-soft);
+    font-size: 0.93rem;
+    line-height: 1.65;
+  }
+
+  @media (max-width: 640px) {
+    .np-card {
+      padding: 1rem;
+      border-radius: 22px;
+    }
+
+    .np-card__form {
+      width: 100%;
+    }
+
+    .np-card__button {
+      width: 100%;
+    }
+
+    .np-card__note {
+      padding: 0.95rem 0.95rem 0.95rem 1rem;
+    }
+
+    .np-card__note::before {
+      left: 0.55rem;
+    }
+  }
+</style>

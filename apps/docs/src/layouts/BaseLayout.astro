@@ -9,21 +9,36 @@ import '@fontsource/rajdhani/700.css'
 interface Props {
   title: string
   description?: string
+  currentPath?: string
 }
 
 const {
   title,
   description = 'Browser-tab-style navigation for Vue, React, and Angular applications.',
+  currentPath: currentPathProp,
 } = Astro.props
 
 const navItems = [
-  { href: '/', label: 'Home' },
-  { href: '/docs/getting-started', label: 'Docs' },
-  { href: '/support', label: 'Support' },
+  {
+    href: '/',
+    label: 'Home',
+    icon: 'home',
+  },
+  {
+    href: '/docs/getting-started',
+    label: 'Docs',
+    icon: 'docs',
+  },
+  {
+    href: '/support',
+    label: 'Support',
+    icon: 'support',
+  },
 ]
 
 const normalizePath = (path: string) => path.replace(/\/$/, '') || '/'
-const currentPath = normalizePath(Astro.url.pathname)
+const currentPath = normalizePath(currentPathProp ?? Astro.url.pathname)
+
 const enableClientRouter =
   !currentPath.startsWith('/docs/') && !currentPath.startsWith('/demos/')
 const isNavItemCurrent = (href: string) => {
@@ -264,11 +279,35 @@ const isNavItemCurrent = (href: string) => {
 
       .nav a {
         position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
         padding: 0.72rem 0.95rem;
         border-radius: 999px;
         color: var(--text-soft);
         font-weight: 500;
         background: rgba(255, 255, 255, 0.03);
+      }
+
+      .nav__icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 0.95rem;
+        height: 0.95rem;
+        flex: 0 0 auto;
+        color: rgba(138, 217, 255, 0.92);
+        transition: color 160ms ease, filter 160ms ease, transform 160ms ease;
+      }
+
+      .nav__icon svg {
+        width: 100%;
+        height: 100%;
+        fill: currentColor;
+      }
+
+      .nav__label {
+        line-height: 1;
       }
 
       .topbar__github {
@@ -312,6 +351,17 @@ const isNavItemCurrent = (href: string) => {
          font-weight: 700;
          background: linear-gradient(180deg, rgba(16, 28, 48, 0.96), rgba(9, 17, 31, 0.98));
          border: 1px solid rgba(115, 190, 255, 0.18);
+        }
+
+       .nav a:hover .nav__icon,
+       .nav a:focus-visible .nav__icon {
+         color: #b3ecff;
+         transform: translateY(-0.5px);
+       }
+
+       .nav a[aria-current='page'] .nav__icon {
+         color: #8fdbff;
+         filter: drop-shadow(0 0 10px rgba(89, 213, 255, 0.38));
        }
 
       .nav a[aria-current='page']::after {
@@ -474,7 +524,7 @@ const isNavItemCurrent = (href: string) => {
       }
 
       .footer {
-        padding: 2rem 0 4rem;
+        padding: 2.4rem 0 4rem;
         color: var(--text-soft);
       }
 
@@ -482,9 +532,62 @@ const isNavItemCurrent = (href: string) => {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 1rem;
-        padding: 1.25rem 1.4rem;
-        border-radius: var(--radius-lg);
+        gap: 1.5rem;
+        padding: 1.45rem 1.5rem;
+        border-radius: 1.6rem;
+        background: linear-gradient(180deg, rgba(6, 12, 24, 0.96), rgba(4, 9, 18, 0.98));
+        border: 1px solid rgba(115, 190, 255, 0.08);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.03),
+          0 16px 34px rgba(0, 0, 0, 0.18);
+      }
+
+      .footer__meta {
+        display: grid;
+        gap: 0.55rem;
+      }
+
+      .footer__title {
+        margin: 0;
+        color: #f4f8ff;
+        font-size: 1rem;
+        font-weight: 700;
+        line-height: 1.1;
+      }
+
+      .footer__description {
+        margin: 0;
+        max-width: 38rem;
+        color: rgba(202, 216, 242, 0.68);
+        font-size: 0.92rem;
+        line-height: 1.5;
+      }
+
+      .footer__copyright {
+        margin: 0;
+        color: rgba(145, 164, 196, 0.48);
+        font-size: 0.8rem;
+        line-height: 1.4;
+      }
+
+      .footer__links {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 1.2rem;
+        margin-left: auto;
+        color: rgba(182, 199, 229, 0.68);
+        font-size: 0.9rem;
+      }
+
+      .footer__links a {
+        color: rgba(190, 209, 238, 0.82);
+      }
+
+      .footer__links a:hover,
+      .footer__links a:focus-visible {
+        color: #f4f8ff;
       }
 
       .prose {
@@ -940,7 +1043,8 @@ const isNavItemCurrent = (href: string) => {
         }
 
         .footer__inner {
-          padding: 1rem 1.05rem;
+          padding: 1.1rem 1rem;
+          border-radius: 1.3rem;
         }
 
         .hero-actions,
@@ -1291,7 +1395,24 @@ const isNavItemCurrent = (href: string) => {
           <nav class="nav" aria-label="Primary">
             {navItems.map((item) => (
               <a href={item.href} aria-current={isNavItemCurrent(item.href) ? 'page' : undefined}>
-                {item.label}
+                <span class="nav__icon">
+                  {item.icon === 'home' && (
+                    <svg viewBox="0 0 20 20" aria-hidden="true">
+                      <path d="M3.75 8.25 10 3.5l6.25 4.75V16a.75.75 0 0 1-.75.75h-3.5v-4.5h-4v4.5h-3.5A.75.75 0 0 1 3.75 16V8.25Z" />
+                    </svg>
+                  )}
+                  {item.icon === 'docs' && (
+                    <svg viewBox="0 0 20 20" aria-hidden="true">
+                      <path d="M5 3.75A1.25 1.25 0 0 0 3.75 5v10A1.25 1.25 0 0 0 5 16.25h10A1.25 1.25 0 0 0 16.25 15V5A1.25 1.25 0 0 0 15 3.75H5Zm2 2.5h6.5v1.5H7v-1.5Zm0 3h6.5v1.5H7v-1.5Zm0 3H11v1.5H7v-1.5Z" />
+                    </svg>
+                  )}
+                  {item.icon === 'support' && (
+                    <svg viewBox="0 0 20 20" aria-hidden="true">
+                      <path d="M10 16.25 4.9 13.1A3.75 3.75 0 0 1 3.25 9.9c0-2.85 3.02-4.62 5.4-2.67L10 8.35l1.35-1.12c2.38-1.95 5.4-.18 5.4 2.67 0 1.3-.67 2.5-1.65 3.1L10 16.25Z" />
+                    </svg>
+                  )}
+                </span>
+                <span class="nav__label">{item.label}</span>
               </a>
             ))}
           </nav>
@@ -1318,14 +1439,14 @@ const isNavItemCurrent = (href: string) => {
     <footer class="footer">
       <div class="shell">
         <div class="footer__inner glass" data-aos="fade-up" data-aos-once="true" data-aos-duration="700">
-          <div>
-            <strong>@drobinetm/multitabs</strong>
-            <div>Tabs with router-native behavior for modern SPAs.</div>
+          <div class="footer__meta">
+            <p class="footer__title">@drobinetm/multitabs</p>
+            <p class="footer__description">Router-native multitabs for Vue, React, and Angular applications.</p>
+            <p class="footer__copyright">&copy; {new Date().getFullYear()} Diovi Robinet Morales</p>
           </div>
-          <div>
-            <a href="/docs/getting-started">Getting started</a>
-            {' · '}
-            <a href="/support">Support the project</a>
+          <div class="footer__links" aria-label="Project links">
+            <a href="/docs/getting-started">Docs</a>
+            <a href="/support">Support</a>
           </div>
         </div>
       </div>
